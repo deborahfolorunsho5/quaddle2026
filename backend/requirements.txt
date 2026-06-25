@@ -14,5 +14,5 @@ email-validator>=2.1
 
 # Auth & security
 python-jose[cryptography]>=3.3   # JWT
-passlib[bcrypt]>=1.7             # password hashing
+bcrypt>=4.1                      # password hashing
 python-multipart>=0.0.9          # form / file uploads

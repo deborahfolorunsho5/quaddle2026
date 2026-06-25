@@ -138,7 +138,7 @@ npm run dev                      # http://localhost:5173
 Built in vertical slices so there's always something demoable.
 
 - [x] **Phase 0 — Setup:** repo structure, FastAPI + React scaffolding, dev environment, health-check wired end-to-end
-- [ ] **Phase 1 — Auth & universities:** university picker at sign-up, register/login, password hashing, JWT, protected routes, profiles
+- [x] **Phase 1 — Auth & universities:** university picker at sign-up, register/login (username or email), bcrypt hashing, JWT, protected routes, profiles
 - [ ] **Phase 2 — Listings:** create/edit/delete, image uploads, browse + search (scoped to campus)
 - [ ] **Phase 3 — Bookings:** request a service, accept/decline, status lifecycle
 - [ ] **Phase 4 — Ratings & reviews:** reviews after a booking, average ratings on profiles
