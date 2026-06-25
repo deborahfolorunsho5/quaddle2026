@@ -9,6 +9,9 @@ env/
 *.sqlite3
 .env
 
+# Uploaded user images (local dev)
+backend/uploads/
+
 # ---- Node / frontend ----
 node_modules/
 dist/
