@@ -1,0 +1,27 @@
+# Local development services for Quaddle.
+# Start with:  docker compose up -d
+# Stop with:   docker compose down   (add -v to also wipe the data volume)
+
+services:
+  db:
+    image: postgres:16
+    container_name: quaddle-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: quaddle
+      POSTGRES_PASSWORD: quaddle
+      POSTGRES_DB: quaddle
+    # Host port 5433 (not the default 5432) to avoid clashing with other
+    # local Postgres instances. Inside the container it's still 5432.
+    ports:
+      - "5433:5432"
+    volumes:
+      - quaddle_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quaddle -d quaddle"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  quaddle_pgdata:

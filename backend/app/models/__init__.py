@@ -1,0 +1,3 @@
+# Import every model here so Alembic's autogenerate sees them all
+# via Base.metadata. Add new models to this list as you create them.
+from app.models.university import University  # noqa: F401
