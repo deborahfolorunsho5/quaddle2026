@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
-from app.routers import universities, auth, users, listings, uploads
+from app.routers import universities, auth, users, listings, uploads, reviews
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
@@ -29,6 +29,7 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(listings.router)
 app.include_router(uploads.router)
+app.include_router(reviews.router)
 
 
 @app.get("/health")

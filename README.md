@@ -141,7 +141,7 @@ Built in vertical slices so there's always something demoable.
 - [x] **Phase 1 — Auth & universities:** university picker at sign-up, register/login (username or email), bcrypt hashing, JWT, protected routes, profiles
 - [x] **Phase 2 — Listings:** create/edit/delete (owner-only), browse + search scoped to campus, guest browsing (image *uploads* deferred — `image_url` field for now)
 - [ ] **Phase 3 — Bookings:** request a service, accept/decline, status lifecycle
-- [ ] **Phase 4 — Ratings & reviews:** reviews after a booking, average ratings on profiles
+- [x] **Phase 4 — Ratings & reviews:** two-way reviews between users (same campus), overall rating on profiles, leave/delete reviews (booking-gating deferred)
 - [ ] **Phase 5 — Polish & deploy:** UI cleanup, error handling, testing, deployment
 
 **First milestone — the vertical slice:** one user registers → logs in → posts a listing → another user books it → leaves a rating. Working end-to-end before any feature gets polished.

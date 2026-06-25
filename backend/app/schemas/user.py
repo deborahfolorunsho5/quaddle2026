@@ -21,6 +21,16 @@ class UserRead(BaseModel):
     university_id: int
 
 
+class UserProfile(BaseModel):
+    """Public profile of a user, including their overall rating."""
+    id: int
+    username: str
+    full_name: str | None
+    university_id: int
+    rating_average: float | None = None
+    rating_count: int = 0
+
+
 class Token(BaseModel):
     """What /auth/login returns: the JWT and its type."""
     access_token: str

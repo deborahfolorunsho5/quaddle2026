@@ -6,6 +6,7 @@ import ListingDetailPage from "./pages/ListingDetailPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import CreateListingPage from "./pages/CreateListingPage";
+import ProfilePage from "./pages/ProfilePage";
 
 function Nav() {
   const { user, logout } = useAuth();
@@ -21,7 +22,7 @@ function Nav() {
         {user && <Link to="/listings/new">Post a listing</Link>}
         {user ? (
           <>
-            <span className="muted">@{user.username}</span>
+            <Link to={`/users/${user.id}`}>@{user.username}</Link>
             <button
               className="btn btn-ghost"
               onClick={() => {
@@ -72,6 +73,7 @@ export default function App() {
               }
             />
             <Route path="/listings/:id" element={<ListingDetailPage />} />
+            <Route path="/users/:id" element={<ProfilePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

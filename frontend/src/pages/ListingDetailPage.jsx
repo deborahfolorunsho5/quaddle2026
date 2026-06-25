@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 
 import { api, mediaUrl } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { Stars } from "../components/Stars";
 
 export default function ListingDetailPage() {
   const { id } = useParams();
@@ -10,12 +11,17 @@ export default function ListingDetailPage() {
   const { user } = useAuth();
 
   const [listing, setListing] = useState(null);
+  const [ownerProfile, setOwnerProfile] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
     api
       .getListing(id)
-      .then(setListing)
+      .then((l) => {
+        setListing(l);
+        return api.getUserProfile(l.owner.id);
+      })
+      .then(setOwnerProfile)
       .catch((err) => setError(err.message));
   }, [id]);
 
@@ -56,7 +62,8 @@ export default function ListingDetailPage() {
         {listing.description}
       </p>
       <p className="muted" style={{ marginTop: "1.5rem" }}>
-        Posted by @{listing.owner.username}
+        Posted by <Link to={`/users/${listing.owner.id}`}>@{listing.owner.username}</Link>{" "}
+        {ownerProfile && <Stars value={ownerProfile.rating_average} />}
       </p>
 
       {isOwner && (

@@ -45,6 +45,12 @@ export const api = {
     }),
   getMe: () => request("/users/me"),
 
+  // --- profiles & reviews ---
+  getUserProfile: (id) => request(`/users/${id}`),
+  getReviews: (subjectId) => request(`/reviews?subject_id=${subjectId}`),
+  createReview: (data) => request("/reviews", { method: "POST", body: data }),
+  deleteReview: (id) => request(`/reviews/${id}`, { method: "DELETE" }),
+
   // --- universities ---
   getUniversities: () => request("/universities"),
 

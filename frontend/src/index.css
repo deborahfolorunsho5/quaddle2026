@@ -223,3 +223,20 @@ select:focus {
   border-radius: 8px;
   margin-top: 0.75rem;
 }
+
+/* ---- stars ---- */
+.stars {
+  color: #f5b301;
+  letter-spacing: 1px;
+}
+.stars-input button {
+  background: none;
+  border: none;
+  padding: 0 1px;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: #f5b301;
+}
+.stars-input button.off {
+  color: #d6d3e0;
+}
