@@ -1,167 +1,126 @@
-<div align="center">
+# Quaddle
 
-# 🎓 Quaddle
+Quaddle is a campus marketplace I'm building for students to run their small businesses. Students post the services they offer (tutoring, hair, photography, baked goods, repairs, and so on), other students browse and book them, and both sides build a reputation through ratings.
 
-### A campus marketplace where students turn their side hustles into bookable businesses.
+Everything is scoped to your university. The idea is proximity: because the person you're booking is on your own campus, they're closer, cheaper to reach, and easier to trust.
 
-Students post the services they offer — tutoring, hair, photography, baked goods, repairs — other students browse and book them, and both sides build a reputation through ratings. **Everything is scoped to your university**, so the people you book are on the same campus: closer, cheaper to reach, and easier to trust.
+## What it does
 
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Status](https://img.shields.io/badge/status-in%20active%20development-yellow)]()
+- Pick your university when you sign up, and you only see listings from your own campus.
+- Create an account with a username (email optional) and log in with either. Browsing is open to guests; posting, booking, and reviewing need an account.
+- Post listings with a title, description, price, category, and a photo. You can upload a file, drag one in, or paste an image straight from your clipboard.
+- Browse and search listings on your campus.
+- Request a booking on a listing. The provider can accept, decline, or mark it complete, and either side can cancel while it's still open.
+- Leave a star rating and review for other students. Reviews work both ways, whether the person was the provider or the customer, and an overall rating shows on their profile.
 
-**[Live Demo](#) · [API Docs](#) · [Report Bug](../../issues)**
+## Tech stack
 
-</div>
+| Layer | Choice |
+|---|---|
+| Backend | FastAPI (Python) |
+| Frontend | React with Vite |
+| Database | PostgreSQL (run in Docker for local dev) |
+| ORM and migrations | SQLAlchemy and Alembic |
+| Auth | JWT tokens, passwords hashed with bcrypt |
+| Validation | Pydantic |
 
----
-
-## 📸 Demo
-
-> _Screenshots and a live demo link land here as features ship. Replace the placeholder below with a short GIF of the core flow — it's the single most effective thing on a project README._
-
-<div align="center">
-
-`[ demo GIF / screenshots coming soon ]`
-
-</div>
-
----
-
-## ✨ What it does
-
-- **🏫 Campus-scoped** — students pick their university at sign-up, and the marketplace only shows listings from their own campus. Proximity is the whole point: the people you book are right there with you.
-- **🔐 Authentication** — secure register / login with hashed passwords and JWT-based sessions, plus editable student profiles tied to a university.
-- **🛍️ Listings** — providers create, edit, and delete service listings with pricing and images; students browse and search within their campus.
-- **📅 Bookings** — customers request a service and providers accept or decline, with bookings moving through a full lifecycle (`pending → accepted → completed / cancelled`).
-- **⭐ Ratings & reviews** — after a completed booking, both parties leave a star rating and review; average ratings surface on each profile to build trust.
-
----
-
-## 🛠️ Built with
-
-| Layer | Technology | Why |
-|---|---|---|
-| **Backend** | FastAPI (async Python) | Type-safe, auto-documented REST API with high performance |
-| **Frontend** | React + Vite | Fast, component-driven SPA |
-| **Database** | SQLite (dev) → PostgreSQL (prod) | Zero-config locally, production-grade in deployment |
-| **ORM / Migrations** | SQLAlchemy + Alembic | Versioned, reproducible schema changes |
-| **Auth** | JWT + bcrypt | Stateless sessions, industry-standard password hashing |
-| **Validation** | Pydantic | Strict request/response schemas |
-
----
-
-## 💡 Engineering highlights
-
-What this project demonstrates beyond "it works":
-
-- **Full-stack ownership** — designed and built both a JSON API and the client that consumes it, including the API contract between them.
-- **Real authentication & authorization** — JWT issuance/verification, password hashing, and route protection (not a fake login).
-- **Domain modeling** — a booking lifecycle with enforced state transitions, and a review system gated on completed bookings to prevent fake ratings.
-- **Relational data design** — universities, users, listings, bookings, and reviews modeled with foreign-key relationships and migrations.
-- **Campus scoping** — listings and bookings are filtered by the user's university, the foundation of a per-campus marketplace.
-- **Auto-generated, interactive API documentation** via FastAPI's OpenAPI/Swagger UI.
-
----
-
-## 🏗️ Architecture
+## Project structure
 
 ```
 quaddle2026/
-├── backend/                # FastAPI application
+├── backend/                FastAPI application
 │   ├── app/
-│   │   ├── main.py         # FastAPI entry point
-│   │   ├── models/         # SQLAlchemy database models
-│   │   ├── schemas/        # Pydantic request/response schemas
-│   │   ├── routers/        # API routes (auth, listings, bookings, reviews)
-│   │   ├── core/           # config, security, dependencies
-│   │   └── db/             # database session & setup
-│   ├── alembic/            # database migrations
+│   │   ├── main.py         app entry point
+│   │   ├── models/         SQLAlchemy database models
+│   │   ├── schemas/        Pydantic request and response schemas
+│   │   ├── routers/        API routes (auth, listings, bookings, reviews, ...)
+│   │   ├── core/           config, security, shared dependencies
+│   │   └── db/             database session and base
+│   ├── alembic/            database migrations
+│   ├── seed.py             loads the list of US universities
 │   └── requirements.txt
-└── frontend/               # React application (Vite)
-    └── src/
-        ├── components/     # reusable UI components
-        ├── pages/          # route-level pages
-        ├── api/            # API client / fetch helpers
-        └── context/        # auth context, global state
+├── frontend/               React application (Vite)
+│   └── src/
+│       ├── components/     reusable UI pieces
+│       ├── pages/          one file per screen
+│       ├── api/            API client
+│       └── context/        auth state
+└── docker-compose.yml      PostgreSQL for local dev
 ```
 
----
+## Getting started
 
-## 🚀 Getting started
+You'll need Python 3.11+, Node.js 18+, and Docker.
 
-### Prerequisites
-- Python 3.11+
-- Node.js 18+
+### 1. Start the database
 
-### Backend
+From the repo root:
+
+```bash
+docker compose up -d
+```
+
+This runs PostgreSQL in a container (on port 5433 so it won't clash with anything else you have).
+
+### 2. Backend
+
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+source .venv/bin/activate         # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-alembic upgrade head             # set up the database
-uvicorn app.main:app --reload    # http://localhost:8000
+cp .env.example .env              # then fill in the values
+alembic upgrade head              # create the tables
+python seed.py                    # load the universities
+uvicorn app.main:app --reload     # runs on http://localhost:8000
 ```
-Interactive API docs auto-generate at `http://localhost:8000/docs`.
 
-### Frontend
+The interactive API docs are at http://localhost:8000/docs.
+
+### 3. Frontend
+
 ```bash
 cd frontend
 npm install
-npm run dev                      # http://localhost:5173
+npm run dev                       # runs on http://localhost:5173
 ```
 
----
+## API overview
 
-## 📡 API overview
-
-| Method | Endpoint | Description |
+| Method | Endpoint | What it does |
 |---|---|---|
-| `GET`  | `/universities` | List supported universities (for the sign-up picker) |
-| `POST` | `/auth/register` | Create an account (with chosen university) |
-| `POST` | `/auth/login` | Log in, receive a JWT |
-| `GET`  | `/users/me` | Get the current user's profile |
-| `GET`  | `/listings` | Browse / search listings on your campus |
-| `POST` | `/listings` | Create a listing (provider) |
-| `GET`  | `/listings/{id}` | View a single listing |
-| `POST` | `/bookings` | Request a booking |
-| `PATCH`| `/bookings/{id}` | Accept / decline / update status |
-| `POST` | `/reviews` | Leave a rating after a completed booking |
+| GET | /universities | List universities for the sign-up picker |
+| POST | /auth/register | Create an account |
+| POST | /auth/login | Log in and get a token |
+| GET | /users/me | The logged-in user's profile |
+| GET | /users/{id} | A public profile with their rating |
+| GET | /listings | Browse and search listings on a campus |
+| POST | /listings | Post a listing |
+| GET | /listings/{id} | View one listing |
+| PATCH | /listings/{id} | Edit your listing |
+| DELETE | /listings/{id} | Delete your listing |
+| POST | /uploads/image | Upload a photo |
+| POST | /bookings | Request a booking |
+| GET | /bookings/mine | Bookings I requested |
+| GET | /bookings/incoming | Bookings on my listings |
+| PATCH | /bookings/{id} | Accept, decline, complete, or cancel |
+| POST | /reviews | Leave a review |
+| GET | /reviews?subject_id={id} | Reviews about a user |
 
----
+## Progress
 
-## 🗺️ Roadmap
+- [x] Project setup: backend and frontend scaffolding, database, dev environment
+- [x] Auth and universities: sign-up with a university, login by username or email, JWT, profiles
+- [x] Listings: post, edit, delete, browse, and search, scoped to campus, with photo upload
+- [x] Ratings and reviews: two-way reviews between students on the same campus, overall rating on profiles
+- [~] Bookings: request, accept, decline, complete, cancel (API done and tested, frontend in progress)
+- [ ] Polish and deploy: cleanup, error handling, and getting it live
 
-Built in vertical slices so there's always something demoable.
+## A note on conventions
 
-- [x] **Phase 0 — Setup:** repo structure, FastAPI + React scaffolding, dev environment, health-check wired end-to-end
-- [x] **Phase 1 — Auth & universities:** university picker at sign-up, register/login (username or email), bcrypt hashing, JWT, protected routes, profiles
-- [x] **Phase 2 — Listings:** create/edit/delete (owner-only), browse + search scoped to campus, guest browsing (image *uploads* deferred — `image_url` field for now)
-- [ ] **Phase 3 — Bookings:** request a service, accept/decline, status lifecycle
-- [x] **Phase 4 — Ratings & reviews:** two-way reviews between users (same campus), overall rating on profiles, leave/delete reviews (booking-gating deferred)
-- [ ] **Phase 5 — Polish & deploy:** UI cleanup, error handling, testing, deployment
+No emojis anywhere in the code: not in source files, strings, UI text, log messages, or commit messages. Plain words instead.
 
-**First milestone — the vertical slice:** one user registers → logs in → posts a listing → another user books it → leaves a rating. Working end-to-end before any feature gets polished.
+## Author
 
----
-
-## 📐 Conventions
-
-Project rules — the source of truth for how code is written here.
-
-- **No emojis in code, ever.** No emojis in source files, identifiers, string literals, log messages, or commit messages. UI-facing text uses plain words. (Emojis are fine in this README and other docs.)
-
----
-
-## 👤 Author
-
-**Deborah Folorunsho**
-📫 ffolo@uic.edu
-🔗 [LinkedIn](#) · [Portfolio](#)
-
----
-
- 
+Deborah Folorunsho
+ffolo@uic.edu
