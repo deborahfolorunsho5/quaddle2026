@@ -4,3 +4,4 @@ from app.models.university import University  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.models.listing import Listing  # noqa: F401
 from app.models.review import Review  # noqa: F401
+from app.models.booking import Booking  # noqa: F401
