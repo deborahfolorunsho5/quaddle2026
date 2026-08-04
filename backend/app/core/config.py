@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,6 +13,15 @@ class Settings(BaseSettings):
 
     # Where the React app runs — needed so the browser allows it to call this API.
     BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:5173"]
+
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def _normalize_postgres_scheme(cls, value: str) -> str:
+        """Managed hosts hand out postgres:// URLs, a scheme SQLAlchemy 2.0 no
+        longer recognises, so the app would die on the first connection."""
+        if value.startswith("postgres://"):
+            return value.replace("postgres://", "postgresql://", 1)
+        return value
 
 
 settings = Settings()
