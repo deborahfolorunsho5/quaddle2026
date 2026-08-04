@@ -89,23 +89,29 @@ npm run dev                       # runs on http://localhost:5173
 
 | Method | Endpoint | What it does |
 |---|---|---|
-| GET | /universities | List universities for the sign-up picker |
-| POST | /auth/register | Create an account |
-| POST | /auth/login | Log in and get a token |
-| GET | /users/me | The logged-in user's profile |
-| GET | /users/{id} | A public profile with their rating |
-| GET | /listings | Browse and search listings on a campus |
-| POST | /listings | Post a listing |
-| GET | /listings/{id} | View one listing |
-| PATCH | /listings/{id} | Edit your listing |
-| DELETE | /listings/{id} | Delete your listing |
-| POST | /uploads/image | Upload a photo |
-| POST | /bookings | Request a booking |
-| GET | /bookings/mine | Bookings I requested |
-| GET | /bookings/incoming | Bookings on my listings |
-| PATCH | /bookings/{id} | Accept, decline, complete, or cancel |
-| POST | /reviews | Leave a review |
-| GET | /reviews?subject_id={id} | Reviews about a user |
+| GET | /api/universities | List universities for the sign-up picker |
+| POST | /api/auth/register | Create an account |
+| POST | /api/auth/login | Log in and get a token |
+| GET | /api/users/me | The logged-in user's profile |
+| GET | /api/users/{id} | A public profile with their rating |
+| GET | /api/listings | Browse and search listings on a campus |
+| POST | /api/listings | Post a listing |
+| GET | /api/listings/{id} | View one listing |
+| PATCH | /api/listings/{id} | Edit your listing |
+| DELETE | /api/listings/{id} | Delete your listing |
+| POST | /api/uploads/image | Upload a photo |
+| POST | /api/bookings | Request a booking |
+| GET | /api/bookings/mine | Bookings I requested |
+| GET | /api/bookings/incoming | Bookings on my listings |
+| PATCH | /api/bookings/{id} | Accept, decline, complete, or cancel |
+| POST | /api/reviews | Leave a review |
+| GET | /api/reviews?subject_id={id} | Reviews about a user |
+| GET | /api/health | Confirm the API is up |
+
+Everything the API serves sits under `/api`, which keeps it clear of the
+frontend's own paths (`/listings/:id` and `/users/:id` exist on both sides).
+Uploaded photos are the one exception: they stay on `/media/<filename>` because
+listings already store that path in `image_url`.
 
 ## Progress
 

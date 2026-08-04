@@ -1,5 +1,10 @@
 // Central API client for the Quaddle backend.
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+// A trailing slash on the configured URL would double up below, so drop it.
+const API_URL = (import.meta.env.VITE_API_URL ?? "http://localhost:8000").replace(/\/+$/, "");
+
+// API routes live under /api; /media does not, so it keeps using API_URL.
+// Set VITE_API_URL to "" when one server serves both the API and this app.
+const API_BASE = `${API_URL}/api`;
 
 const TOKEN_KEY = "quaddle_token";
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
@@ -22,7 +27,7 @@ async function request(path, { method = "GET", body, form, headers = {} } = {}) 
     opts.body = JSON.stringify(body);
   }
 
-  const res = await fetch(`${API_URL}${path}`, opts);
+  const res = await fetch(`${API_BASE}${path}`, opts);
   if (res.status === 204) return null;
 
   const data = await res.json().catch(() => null);
