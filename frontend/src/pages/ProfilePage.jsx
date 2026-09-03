@@ -65,21 +65,30 @@ export default function ProfilePage() {
 
   return (
     <>
-      <h1 style={{ marginBottom: 0 }}>@{profile.username}</h1>
-      {profile.full_name && <p className="muted">{profile.full_name}</p>}
-      <p>
-        <Stars value={profile.rating_average} />{" "}
-        {profile.rating_count > 0 && (
-          <span className="muted">
-            {profile.rating_average} · {profile.rating_count} review
-            {profile.rating_count > 1 ? "s" : ""}
-          </span>
-        )}
-      </p>
+      <div className="profile-head">
+        <div className="avatar">{profile.username.slice(0, 1)}</div>
+        <div>
+          <h1>@{profile.username}</h1>
+          {profile.full_name && <p className="muted">{profile.full_name}</p>}
+          <p className="rating-row">
+            <Stars value={profile.rating_average} />
+            {profile.rating_count > 0 && (
+              <span className="muted">
+                {profile.rating_average} from {profile.rating_count} review
+                {profile.rating_count > 1 ? "s" : ""}
+              </span>
+            )}
+          </p>
+        </div>
+      </div>
 
       {canReview && (
-        <form className="card-panel" onSubmit={submitReview} style={{ margin: "1.5rem 0" }}>
-          <h3 style={{ marginTop: 0 }}>Leave a review</h3>
+        <form
+          className="card-panel"
+          onSubmit={submitReview}
+          style={{ marginBottom: "2rem" }}
+        >
+          <h2 style={{ marginBottom: "1rem" }}>Leave a review</h2>
           {formError && <div className="error">{formError}</div>}
           <div className="field">
             <label>Rating</label>
@@ -96,7 +105,7 @@ export default function ProfilePage() {
           <div className="field">
             <label>You dealt with them as a… (optional)</label>
             <select value={role} onChange={(e) => setRole(e.target.value)}>
-              <option value="">—</option>
+              <option value="">No answer</option>
               <option value="provider">Provider (they offered a service)</option>
               <option value="customer">Customer (they booked from me)</option>
             </select>
@@ -105,26 +114,24 @@ export default function ProfilePage() {
         </form>
       )}
       {user && alreadyReviewed && (
-        <p className="muted">You've already reviewed this person.</p>
+        <p className="muted">You have already reviewed this person.</p>
       )}
       {!user && <p className="muted">Log in to leave a review.</p>}
 
-      <h2>Reviews</h2>
+      <h2 style={{ margin: "1.5rem 0 1rem" }}>Reviews</h2>
       {reviews.length === 0 ? (
         <p className="empty">No reviews yet.</p>
       ) : (
         reviews.map((r) => (
-          <div key={r.id} className="card-panel" style={{ marginBottom: "0.75rem" }}>
-            <Stars value={r.rating} />{" "}
-            <strong>@{r.author.username}</strong>
-            {r.role && <span className="muted"> · as {r.role}</span>}
-            {r.comment && <p style={{ marginBottom: 0 }}>{r.comment}</p>}
+          <div key={r.id} className="review">
+            <div className="review-head">
+              <Stars value={r.rating} />
+              <strong>@{r.author.username}</strong>
+              {r.role && <span className="muted">as {r.role}</span>}
+            </div>
+            {r.comment && <p>{r.comment}</p>}
             {user && r.author.id === user.id && (
-              <button
-                className="btn btn-ghost"
-                style={{ color: "var(--danger)", paddingLeft: 0 }}
-                onClick={() => removeReview(r.id)}
-              >
+              <button className="btn btn-danger" onClick={() => removeReview(r.id)}>
                 Delete
               </button>
             )}

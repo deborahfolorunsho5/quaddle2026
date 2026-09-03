@@ -1,4 +1,4 @@
-// Central API client for the Quaddle backend.
+// Central API client for the Quad backend.
 // A trailing slash on the configured URL would double up below, so drop it.
 const API_URL = (import.meta.env.VITE_API_URL ?? "http://localhost:8000").replace(/\/+$/, "");
 
@@ -72,6 +72,11 @@ export const api = {
   updateListing: (id, data) =>
     request(`/listings/${id}`, { method: "PATCH", body: data }),
   deleteListing: (id) => request(`/listings/${id}`, { method: "DELETE" }),
+
+  // --- location search ---
+  // Proxied through our backend: the geocoder sends no CORS headers on a
+  // successful reply and rejects unidentified browser clients.
+  geocode: (q) => request(`/geocode?q=${encodeURIComponent(q)}`),
 
   // --- uploads ---
   uploadImage: (file) => {

@@ -1,4 +1,4 @@
-# One image serving both halves of Quaddle. The layout mirrors the repo because
+# One image serving both halves of Quad. The layout mirrors the repo because
 # backend/app/main.py resolves the frontend build as ../../frontend/dist.
 
 # ---- Stage 1: build the React app ----

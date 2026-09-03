@@ -27,7 +27,11 @@ export default function LoginPage() {
 
   return (
     <div className="page-narrow">
-      <h1>Log in</h1>
+      <div className="page-head">
+        <p className="eyebrow">Welcome back</p>
+        <h1>Log in</h1>
+      </div>
+
       <form className="card-panel" onSubmit={onSubmit}>
         {error && <div className="error">{error}</div>}
 
@@ -55,8 +59,8 @@ export default function LoginPage() {
       </form>
 
       <p className="muted" style={{ textAlign: "center", marginTop: "1rem" }}>
-        <Link to="/">Continue as guest</Link> · New here?{" "}
-        <Link to="/signup">Sign up</Link>
+        New here? <Link to="/signup">Sign up</Link> or{" "}
+        <Link to="/">keep browsing as a guest</Link>.
       </p>
     </div>
   );

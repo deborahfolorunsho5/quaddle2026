@@ -1,4 +1,4 @@
-# Local development services for Quaddle.
+# Local development services for Quad.
 # Start with:  docker compose up -d
 # Stop with:   docker compose down   (add -v to also wipe the data volume)
 

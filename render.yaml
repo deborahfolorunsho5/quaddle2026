@@ -40,7 +40,7 @@ services:
         generateValue: true
 
       - key: PROJECT_NAME
-        value: Quaddle
+        value: Quad
 
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: 1440

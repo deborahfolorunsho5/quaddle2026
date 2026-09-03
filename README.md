@@ -1,15 +1,16 @@
-# Quaddle
+# Quad
 
-Quaddle is a campus marketplace I'm building for students to run their small businesses. Students post the services they offer (tutoring, hair, photography, baked goods, repairs, and so on), other students browse and book them, and both sides build a reputation through ratings.
+Quad is a campus marketplace I'm building for students to run their small businesses. Students post the services they offer (tutoring, hair, photography, baked goods, repairs, and so on), other students browse and book them, and both sides build a reputation through ratings.
 
-Everything is scoped to your university. The idea is proximity: because the person you're booking is on your own campus, they're closer, cheaper to reach, and easier to trust.
+Everything is scoped to one university. The idea is proximity: because the person you're booking is on your own campus, they're closer, cheaper to reach, and easier to trust. Quad is opening at the University of Illinois Chicago first, so that is the only campus available for now.
 
 ## What it does
 
-- Pick your university when you sign up, and you only see listings from your own campus.
+- Everything is scoped to one campus. Quad is open to UIC first, so there is no university to pick at sign-up, and you only see listings from your own campus.
 - Create an account with a username (email optional) and log in with either. Browsing is open to guests; posting, booking, and reviewing need an account.
 - Post listings with a title, description, price, category, and a photo. You can upload a file, drag one in, or paste an image straight from your clipboard.
 - Browse and search listings on your campus.
+- Pin where you'll meet when you post a listing: search for the address, then drag the pin if it isn't quite right. Browsers see how far each listing is from where they are. Same campus doesn't mean same walk: this is the difference between five minutes and thirty. You can pin a rough area instead of an exact spot, which is what I'd suggest if the pin is where you live.
 - Request a booking on a listing. The provider can accept, decline, or mark it complete, and either side can cancel while it's still open.
 - Leave a star rating and review for other students. Reviews work both ways, whether the person was the provider or the customer, and an overall rating shows on their profile.
 
@@ -23,6 +24,7 @@ Everything is scoped to your university. The idea is proximity: because the pers
 | ORM and migrations | SQLAlchemy and Alembic |
 | Auth | JWT tokens, passwords hashed with bcrypt |
 | Validation | Pydantic |
+| Maps | Leaflet with OpenStreetMap tiles, Nominatim for address search (no API key needed) |
 
 ## Project structure
 
@@ -44,7 +46,8 @@ quaddle2026/
 │       ├── components/     reusable UI pieces
 │       ├── pages/          one file per screen
 │       ├── api/            API client
-│       └── context/        auth state
+│       ├── context/        auth state
+│       └── lib/            geo maths, the location hook, Leaflet setup
 └── docker-compose.yml      PostgreSQL for local dev
 ```
 
@@ -89,16 +92,17 @@ npm run dev                       # runs on http://localhost:5173
 
 | Method | Endpoint | What it does |
 |---|---|---|
-| GET | /api/universities | List universities for the sign-up picker |
+| GET | /api/universities | The campus the app is open to |
 | POST | /api/auth/register | Create an account |
 | POST | /api/auth/login | Log in and get a token |
 | GET | /api/users/me | The logged-in user's profile |
 | GET | /api/users/{id} | A public profile with their rating |
-| GET | /api/listings | Browse and search listings on a campus |
+| GET | /api/listings | Browse and search listings, defaulting to the active campus |
 | POST | /api/listings | Post a listing |
 | GET | /api/listings/{id} | View one listing |
 | PATCH | /api/listings/{id} | Edit your listing |
 | DELETE | /api/listings/{id} | Delete your listing |
+| GET | /api/geocode?q={text} | Look up coordinates for a typed address |
 | POST | /api/uploads/image | Upload a photo |
 | POST | /api/bookings | Request a booking |
 | GET | /api/bookings/mine | Bookings I requested |
@@ -113,18 +117,53 @@ frontend's own paths (`/listings/:id` and `/users/:id` exist on both sides).
 Uploaded photos are the one exception: they stay on `/media/<filename>` because
 listings already store that path in `image_url`.
 
+A listing body carries an optional `latitude` and `longitude` pair plus a
+`location_is_approximate` flag. The two coordinates have to be sent together,
+and when the flag is set the API rounds them to three decimal places (roughly
+100 m) before serving them. The precise pin stays in the database and never
+goes out over the wire, which matters because guests can browse.
+
+A note on the two map pieces, since they are easy to conflate. Leaflet is the
+JavaScript that draws the map and handles pan, zoom, and markers. It carries no
+map imagery of its own: the tiles come from OpenStreetMap, whose public tile
+server needs no key but does require the attribution shown on the map. Swapping
+to a different tile style is a two-constant change in `src/lib/leaflet.js`.
+
+Address search runs through `GET /api/geocode` rather than straight from the
+browser, for three reasons: Nominatim sends no CORS headers on a successful
+reply, it rejects unidentified browser clients outright, and proxying keeps
+students' IP addresses off a third party. The endpoint needs an account, since
+only signed-in students post listings. It caches repeats in memory and spaces
+calls a second apart to stay inside Nominatim's usage policy, so set
+`GEOCODER_USER_AGENT` in `.env` to something with a real contact address.
+
+The campus is configuration, not a user choice. `ACTIVE_CAMPUS_NAME` in
+`backend/app/core/config.py` names the one university the app is open to, and it
+has to match a row in the `universities` table exactly. `GET /api/universities`
+returns only that row, registration on any other campus is rejected, and a guest
+browsing without a `university_id` falls back to it. The full US catalog stays
+seeded, so opening a second campus is a settings change rather than a migration.
+
 ## Progress
 
 - [x] Project setup: backend and frontend scaffolding, database, dev environment
-- [x] Auth and universities: sign-up with a university, login by username or email, JWT, profiles
+- [x] Auth and universities: sign-up scoped to the active campus, login by username or email, JWT, profiles
 - [x] Listings: post, edit, delete, browse, and search, scoped to campus, with photo upload
 - [x] Ratings and reviews: two-way reviews between students on the same campus, overall rating on profiles
+- [x] Locations and distance: pin a meeting spot on a map, walking distance from where you are, rough-area option
 - [~] Bookings: request, accept, decline, complete, cancel (API done and tested, frontend in progress)
 - [ ] Polish and deploy: cleanup, error handling, and getting it live
 
 ## A note on conventions
 
-No emojis anywhere in the code: not in source files, strings, UI text, log messages, or commit messages. Plain words instead.
+
+A few things I try to keep consistent across the codebase:
+
+- Small, focused commits, one change at a time. No bundling unrelated work.
+- No dead code. I don't leave commented-out blocks lying around "just in case."
+- Comments explain why, not what. If the reason is obvious from the code, there's no comment.
+- No emojis anywhere, and no em dashes in the docs. Just a plain, human voice.
+- Config and secrets live in `.env`, never in the code.
 
 ## Author
 
