@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.campus import get_active_campus
 from app.core.deps import get_current_user, get_current_user_optional
 from app.db.session import get_db
 from app.models.listing import Listing
@@ -18,19 +19,19 @@ def browse_listings(
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional),
     university_id: Optional[int] = Query(
-        None, description="Campus to browse. Defaults to your own if logged in."
+        None, description="Campus to browse. Defaults to your own, or to the campus Quad is open to."
     ),
     q: Optional[str] = Query(None, description="Search text in title."),
     category: Optional[str] = Query(None),
 ):
-    """Browse active listings on a campus. Public — guests may browse, but
-    they must say which campus; logged-in users default to their own."""
-    campus_id = university_id or (current_user.university_id if current_user else None)
-    if campus_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Specify a university_id to browse, or log in.",
-        )
+    """Browse active listings on a campus. Public, and guests need not say
+    which campus: with Quad open to a single campus, that is the sensible
+    default, and it is what makes the browse page work before sign-up."""
+    campus_id = (
+        university_id
+        or (current_user.university_id if current_user else None)
+        or get_active_campus(db).id
+    )
 
     stmt = (
         select(Listing)

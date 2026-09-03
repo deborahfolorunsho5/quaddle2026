@@ -6,7 +6,9 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
-from app.routers import universities, auth, users, listings, uploads, reviews, bookings
+from app.routers import (
+    universities, auth, users, listings, uploads, reviews, bookings, geocode,
+)
 
 # Every API route lives under /api. Without it the API and the frontend collide:
 # both want /listings/{id} and /users/{id}, so they could not share one origin.
@@ -39,6 +41,7 @@ for router in (
     uploads.router,
     reviews.router,
     bookings.router,
+    geocode.router,
 ):
     app.include_router(router, prefix=API_PREFIX)
 

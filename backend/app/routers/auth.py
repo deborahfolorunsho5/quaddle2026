@@ -3,9 +3,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 
+from app.core.campus import get_active_campus
 from app.core.security import hash_password, verify_password, create_access_token
 from app.db.session import get_db
-from app.models.university import University
 from app.models.user import User
 from app.schemas.user import UserCreate, UserRead, Token
 
@@ -23,9 +23,13 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     if payload.email and db.scalar(select(User).where(User.email == payload.email)):
         raise HTTPException(status_code=409, detail="Email already registered")
 
-    # The chosen university must actually exist.
-    if not db.get(University, payload.university_id):
-        raise HTTPException(status_code=404, detail="University not found")
+    # Sign-ups are limited to the one campus Quad is open to.
+    campus = get_active_campus(db)
+    if payload.university_id != campus.id:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Quad is only open to {campus.name} right now.",
+        )
 
     user = User(
         username=payload.username,

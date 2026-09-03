@@ -1,6 +1,7 @@
-import { Routes, Route, Link, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Link, NavLink, Navigate, useNavigate } from "react-router-dom";
 
 import { useAuth } from "./context/AuthContext";
+import { useCampus } from "./lib/campus";
 import BrowsePage from "./pages/BrowsePage";
 import ListingDetailPage from "./pages/ListingDetailPage";
 import LoginPage from "./pages/LoginPage";
@@ -10,39 +11,68 @@ import ProfilePage from "./pages/ProfilePage";
 
 function Nav() {
   const { user, logout } = useAuth();
+  const campus = useCampus();
   const navigate = useNavigate();
 
   return (
     <header className="nav">
-      <Link to="/" className="brand">
-        Quaddle
-      </Link>
-      <nav className="nav-links">
-        <Link to="/">Browse</Link>
-        {user && <Link to="/listings/new">Post a listing</Link>}
-        {user ? (
-          <>
-            <Link to={`/users/${user.id}`}>@{user.username}</Link>
-            <button
-              className="btn btn-ghost"
-              onClick={() => {
-                logout();
-                navigate("/");
-              }}
-            >
-              Log out
-            </button>
-          </>
-        ) : (
-          <>
-            <Link to="/login">Log in</Link>
-            <Link to="/signup" className="btn btn-primary">
-              Sign up
-            </Link>
-          </>
-        )}
-      </nav>
+      <div className="nav-inner">
+        <Link to="/" className="brand">
+          <span className="brand-name">Quad</span>
+          <span className="brand-sub">
+            {campus ? campus.name : "Campus marketplace"}
+          </span>
+        </Link>
+        <nav className="nav-links">
+          <NavLink to="/" end className="nav-link">
+            Browse
+          </NavLink>
+          {user && (
+            <NavLink to="/listings/new" className="nav-link">
+              Post a listing
+            </NavLink>
+          )}
+          {user ? (
+            <>
+              <Link to={`/users/${user.id}`} className="nav-me">
+                @{user.username}
+              </Link>
+              <button
+                className="btn btn-onnavy"
+                onClick={() => {
+                  logout();
+                  navigate("/");
+                }}
+              >
+                Log out
+              </button>
+            </>
+          ) : (
+            <>
+              <NavLink to="/login" className="nav-link">
+                Log in
+              </NavLink>
+              <Link to="/signup" className="btn btn-accent">
+                Sign up
+              </Link>
+            </>
+          )}
+        </nav>
+      </div>
     </header>
+  );
+}
+
+function Footer() {
+  const campus = useCampus();
+  return (
+    <footer className="site-footer">
+      <div>
+        Quad is a student-run marketplace
+        {campus ? ` for ${campus.name}` : ""}. Browsing is open to everyone;
+        posting, booking, and reviewing need an account.
+      </div>
+    </footer>
   );
 }
 
@@ -80,6 +110,7 @@ export default function App() {
           </Routes>
         )}
       </main>
+      <Footer />
     </>
   );
 }
