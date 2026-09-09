@@ -1,10 +1,15 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
+from app.core.time import as_utc
 from app.db.session import get_db
-from app.models.booking import Booking
+from app.models.availability import AvailabilitySlot
+from app.models.booking import Booking, SLOT_RELEASING_STATUSES
 from app.models.listing import Listing
 from app.models.user import User
 from app.schemas.booking import BookingCreate, BookingRead, BookingStatusUpdate
@@ -20,6 +25,8 @@ ALLOWED_TRANSITIONS = {
     ("customer", "accepted", "cancelled"),
 }
 
+SLOT_TAKEN_MESSAGE = "Someone just booked that time. Pick another one."
+
 
 @router.post("", response_model=BookingRead, status_code=status.HTTP_201_CREATED)
 def create_booking(
@@ -27,7 +34,7 @@ def create_booking(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Request a booking on a listing. Requires an account."""
+    """Request a booking against one of the provider's open slots."""
     listing = db.get(Listing, payload.listing_id)
     if listing is None or not listing.is_active:
         raise HTTPException(status_code=404, detail="Listing not found")
@@ -38,16 +45,36 @@ def create_booking(
             status_code=403, detail="You can only book listings on your own campus."
         )
 
+    slot = db.get(AvailabilitySlot, payload.slot_id)
+    if slot is None or slot.provider_id != listing.owner_id:
+        raise HTTPException(
+            status_code=404, detail="That time isn't on this provider's calendar."
+        )
+    if as_utc(slot.starts_at) <= datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="That time has already passed.")
+
+    held = db.scalar(select(Booking.id).where(Booking.slot_id == slot.id).limit(1))
+    if held is not None:
+        raise HTTPException(status_code=409, detail=SLOT_TAKEN_MESSAGE)
+
     booking = Booking(
         listing_id=listing.id,
         customer_id=current_user.id,
         provider_id=listing.owner_id,
+        slot_id=slot.id,
         message=payload.message,
-        requested_time=payload.requested_time,
+        # Copied off the slot so the time survives the slot being released.
+        requested_time=slot.starts_at,
+        requested_end=slot.ends_at,
         status="pending",
     )
     db.add(booking)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Two customers hit the same slot at once; the unique constraint decided.
+        db.rollback()
+        raise HTTPException(status_code=409, detail=SLOT_TAKEN_MESSAGE)
     db.refresh(booking)
     return booking
 
@@ -106,6 +133,9 @@ def update_status(
         )
 
     booking.status = payload.status
+    if payload.status in SLOT_RELEASING_STATUSES:
+        # Hand the time back so another customer can take it.
+        booking.slot_id = None
     db.commit()
     db.refresh(booking)
     return booking

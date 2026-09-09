@@ -7,7 +7,8 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.routers import (
-    universities, auth, users, listings, uploads, reviews, bookings, geocode,
+    universities, auth, users, listings, uploads, reviews, availability,
+    bookings, messages, geocode,
 )
 
 # Every API route lives under /api. Without it the API and the frontend collide:
@@ -40,7 +41,9 @@ for router in (
     listings.router,
     uploads.router,
     reviews.router,
+    availability.router,
     bookings.router,
+    messages.router,
     geocode.router,
 ):
     app.include_router(router, prefix=API_PREFIX)

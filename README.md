@@ -11,7 +11,9 @@ Everything is scoped to one university. The idea is proximity: because the perso
 - Post listings with a title, description, price, category, and a photo. You can upload a file, drag one in, or paste an image straight from your clipboard.
 - Browse and search listings on your campus.
 - Pin where you'll meet when you post a listing: search for the address, then drag the pin if it isn't quite right. Browsers see how far each listing is from where they are. Same campus doesn't mean same walk: this is the difference between five minutes and thirty. You can pin a rough area instead of an exact spot, which is what I'd suggest if the pin is where you live.
-- Request a booking on a listing. The provider can accept, decline, or mark it complete, and either side can cancel while it's still open.
+- Open the times you're free on your calendar. Students booking any of your listings pick from those times, and a time closes across all of your listings once it's taken, since you can only be in one place at once.
+- Request a booking by picking one of those open times. The provider can accept, decline, or mark it complete, and either side can cancel while it's still open. Declining or cancelling puts the time back on the calendar.
+- Message any student on your campus. Threads are two-way and live next to your bookings, so you can sort out the details before or after you book.
 - Leave a star rating and review for other students. Reviews work both ways, whether the person was the provider or the customer, and an overall rating shows on their profile.
 
 ## Tech stack
@@ -104,10 +106,21 @@ npm run dev                       # runs on http://localhost:5173
 | DELETE | /api/listings/{id} | Delete your listing |
 | GET | /api/geocode?q={text} | Look up coordinates for a typed address |
 | POST | /api/uploads/image | Upload a photo |
-| POST | /api/bookings | Request a booking |
+| GET | /api/availability?provider_id={id} | A provider's open, upcoming times |
+| GET | /api/availability/mine | My own times, including the booked ones |
+| POST | /api/availability | Open a time on my calendar |
+| DELETE | /api/availability/{id} | Take an unbooked time off my calendar |
+| POST | /api/bookings | Request a booking against an open time |
 | GET | /api/bookings/mine | Bookings I requested |
 | GET | /api/bookings/incoming | Bookings on my listings |
 | PATCH | /api/bookings/{id} | Accept, decline, complete, or cancel |
+| GET | /api/conversations | My inbox, with previews and unread counts |
+| POST | /api/conversations | Open a thread with someone, or reopen it |
+| GET | /api/conversations/unread-count | Unread total, for the nav badge |
+| GET | /api/conversations/{id} | One thread |
+| GET | /api/conversations/{id}/messages | The messages in a thread |
+| POST | /api/conversations/{id}/messages | Send a message |
+| POST | /api/conversations/{id}/read | Mark the other side's messages read |
 | POST | /api/reviews | Leave a review |
 | GET | /api/reviews?subject_id={id} | Reviews about a user |
 | GET | /api/health | Confirm the API is up |
@@ -144,6 +157,29 @@ returns only that row, registration on any other campus is rejected, and a guest
 browsing without a `university_id` falls back to it. The full US catalog stays
 seeded, so opening a second campus is a settings change rather than a migration.
 
+Availability lives on the provider, not on the listing. A student can only be
+in one place at a time, so taking Saturday at 2 pm for a haircut has to close
+that window on their tutoring listing too. A booking holds its slot through a
+unique constraint on `slot_id`, which is also what stops two customers taking
+the same time in the same second. Declining or cancelling clears that column
+instead of deleting the row, and because both PostgreSQL and SQLite allow
+repeated nulls in a unique constraint, the time reopens on its own. The start
+and end are copied onto the booking as well, so a declined booking can still
+say which time was asked for after the slot has gone back on the calendar.
+
+Times cross the wire as UTC with an offset and are rendered in the student's own
+timezone. The API refuses a datetime without an offset rather than guessing
+whose clock it came from, since a wrong guess is a no-show. There is one wart
+worth knowing: SQLite has no timezone type, so it hands values back naive where
+PostgreSQL returns them aware. `app/core/time.py` stamps UTC back on when that
+happens, because a naive value serializes without an offset and the browser then
+reads it as local time.
+
+Messages poll rather than stream. The backend is deliberately synchronous, so
+there is no websocket to hang a live thread off, and an open thread asking every
+five seconds for anything newer than the last id it holds is cheap: an idle
+thread answers with an empty list.
+
 ## Progress
 
 - [x] Project setup: backend and frontend scaffolding, database, dev environment
@@ -151,7 +187,8 @@ seeded, so opening a second campus is a settings change rather than a migration.
 - [x] Listings: post, edit, delete, browse, and search, scoped to campus, with photo upload
 - [x] Ratings and reviews: two-way reviews between students on the same campus, overall rating on profiles
 - [x] Locations and distance: pin a meeting spot on a map, walking distance from where you are, rough-area option
-- [~] Bookings: request, accept, decline, complete, cancel (API done and tested, frontend in progress)
+- [x] Bookings: providers open times, customers pick one, then accept, decline, complete, cancel
+- [x] Messaging: two-way threads between students on the same campus
 - [ ] Polish and deploy: cleanup, error handling, and getting it live
 
 ## A note on conventions

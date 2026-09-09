@@ -78,6 +78,37 @@ export const api = {
   // successful reply and rejects unidentified browser clients.
   geocode: (q) => request(`/geocode?q=${encodeURIComponent(q)}`),
 
+  // --- availability ---
+  // Slots hang off the provider, not the listing: one person cannot be in two
+  // places at once, so taking a time closes it on all of their listings.
+  getAvailability: (providerId) => request(`/availability?provider_id=${providerId}`),
+  getMyAvailability: () => request("/availability/mine"),
+  createSlot: (data) => request("/availability", { method: "POST", body: data }),
+  deleteSlot: (id) => request(`/availability/${id}`, { method: "DELETE" }),
+
+  // --- bookings ---
+  createBooking: (data) => request("/bookings", { method: "POST", body: data }),
+  getMyBookings: () => request("/bookings/mine"),
+  getIncomingBookings: () => request("/bookings/incoming"),
+  updateBookingStatus: (id, status) =>
+    request(`/bookings/${id}`, { method: "PATCH", body: { status } }),
+
+  // --- messages ---
+  getConversations: () => request("/conversations"),
+  getConversation: (id) => request(`/conversations/${id}`),
+  // Get-or-create: opening a thread you already have returns that same one.
+  startConversation: (userId) =>
+    request("/conversations", { method: "POST", body: { user_id: userId } }),
+  getMessages: (id, afterId) =>
+    request(
+      `/conversations/${id}/messages${afterId ? `?after_id=${afterId}` : ""}`
+    ),
+  sendMessage: (id, body) =>
+    request(`/conversations/${id}/messages`, { method: "POST", body: { body } }),
+  markConversationRead: (id) =>
+    request(`/conversations/${id}/read`, { method: "POST" }),
+  getUnreadCount: () => request("/conversations/unread-count"),
+
   // --- uploads ---
   uploadImage: (file) => {
     const form = new FormData();
