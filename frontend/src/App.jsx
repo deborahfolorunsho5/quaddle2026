@@ -1,5 +1,15 @@
-import { Routes, Route, Link, NavLink, Navigate, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import {
+  Routes,
+  Route,
+  Link,
+  NavLink,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
+import { api } from "./api/client";
 import { useAuth } from "./context/AuthContext";
 import { useCampus } from "./lib/campus";
 import BrowsePage from "./pages/BrowsePage";
@@ -8,11 +18,48 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import CreateListingPage from "./pages/CreateListingPage";
 import ProfilePage from "./pages/ProfilePage";
+import AvailabilityPage from "./pages/AvailabilityPage";
+import BookingsPage from "./pages/BookingsPage";
+import MessagesPage from "./pages/MessagesPage";
+import ConversationPage from "./pages/ConversationPage";
+
+// No websocket to push on, so the badge asks. Also re-checked on every
+// navigation, which is what makes it clear the moment you read a thread.
+const UNREAD_POLL_MS = 20000;
+
+function useUnreadCount(enabled) {
+  const [count, setCount] = useState(0);
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    if (!enabled) {
+      setCount(0);
+      return;
+    }
+
+    let cancelled = false;
+    const check = () =>
+      api
+        .getUnreadCount()
+        .then(({ count: n }) => !cancelled && setCount(n))
+        .catch(() => {});
+
+    check();
+    const timer = setInterval(check, UNREAD_POLL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [enabled, pathname]);
+
+  return count;
+}
 
 function Nav() {
   const { user, logout } = useAuth();
   const campus = useCampus();
   const navigate = useNavigate();
+  const unread = useUnreadCount(Boolean(user));
 
   return (
     <header className="nav">
@@ -28,9 +75,18 @@ function Nav() {
             Browse
           </NavLink>
           {user && (
-            <NavLink to="/listings/new" className="nav-link">
-              Post a listing
-            </NavLink>
+            <>
+              <NavLink to="/listings/new" className="nav-link">
+                Post a listing
+              </NavLink>
+              <NavLink to="/bookings" className="nav-link">
+                Bookings
+              </NavLink>
+              <NavLink to="/messages" className="nav-link">
+                Messages
+                {unread > 0 && <span className="badge">{unread}</span>}
+              </NavLink>
+            </>
           )}
           {user ? (
             <>
@@ -104,6 +160,38 @@ export default function App() {
             />
             <Route path="/listings/:id" element={<ListingDetailPage />} />
             <Route path="/users/:id" element={<ProfilePage />} />
+            <Route
+              path="/availability"
+              element={
+                <ProtectedRoute>
+                  <AvailabilityPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bookings"
+              element={
+                <ProtectedRoute>
+                  <BookingsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/messages"
+              element={
+                <ProtectedRoute>
+                  <MessagesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/messages/:id"
+              element={
+                <ProtectedRoute>
+                  <ConversationPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
