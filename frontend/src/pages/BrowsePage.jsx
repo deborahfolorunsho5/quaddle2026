@@ -4,8 +4,25 @@ import { Link } from "react-router-dom";
 import { api, mediaUrl } from "../api/client";
 import ListingsMap from "../components/ListingsMap";
 import { useCampus } from "../lib/campus";
-import { distanceMiles, formatWalk, pinOf } from "../lib/geo";
+import { distanceMiles, formatMiles, formatWalk, pinOf } from "../lib/geo";
 import { useMyLocation } from "../lib/useMyLocation";
+
+// Compact "4.8 ★ (12)" for a card. An unrated provider says so plainly
+// rather than showing zero stars, which would read as a bad rating.
+function CardRating({ owner }) {
+  if (!owner.rating_count) {
+    return <span className="card-rating new">New</span>;
+  }
+  const count = owner.rating_count;
+  return (
+    <span
+      className="card-rating"
+      title={`${owner.rating_average} out of 5 from ${count} review${count > 1 ? "s" : ""}`}
+    >
+      {owner.rating_average.toFixed(1)} ★ ({count})
+    </span>
+  );
+}
 
 function ListingCard({ listing, miles }) {
   const img = mediaUrl(listing.image_url);
@@ -20,11 +37,18 @@ function ListingCard({ listing, miles }) {
         {listing.category && <p className="eyebrow">{listing.category}</p>}
         <p className="card-title">{listing.title}</p>
         <p className="card-desc">{listing.description}</p>
-        {miles != null && <p className="card-walk">{formatWalk(miles)}</p>}
+        {miles != null && (
+          <p className="card-walk">
+            {formatMiles(miles)} away · {formatWalk(miles)}
+          </p>
+        )}
         <div className="card-foot">
           <span className="price">${Number(listing.price).toFixed(2)}</span>
           {listing.owner && (
-            <span className="card-by">@{listing.owner.username}</span>
+            <span className="card-by">
+              @{listing.owner.username}
+              <CardRating owner={listing.owner} />
+            </span>
           )}
         </div>
       </div>
@@ -176,6 +200,15 @@ export default function BrowsePage() {
             {showMap ? "Show list" : "Show map"}
           </button>
         </div>
+      )}
+
+      {anyPinned && status === "idle" && (
+        <p className="hint" style={{ marginBottom: "1.25rem" }}>
+          <button className="link-button" onClick={request}>
+            Use my location
+          </button>{" "}
+          to see how far each listing is from you.
+        </p>
       )}
 
       {anyPinned && locationOff && (

@@ -107,3 +107,18 @@ class ListingRead(BaseModel):
             self.latitude = round(self.latitude, APPROX_DECIMALS)
             self.longitude = round(self.longitude, APPROX_DECIMALS)
         return self
+
+
+class RatedListingOwner(ListingOwner):
+    """Owner info plus their overall rating, the same numbers their profile
+    shows. Reviews are about people, not listings, so this is the provider's
+    rating across everything they have done on Quad."""
+    rating_average: float | None = None
+    rating_count: int = 0
+
+
+class ListingBrowseItem(ListingRead):
+    """A listing as it appears on a browse card. Only browse pays for the
+    rating lookup, so the other endpoints keep returning ListingRead rather
+    than a rating_count of 0 that was never actually counted."""
+    owner: RatedListingOwner

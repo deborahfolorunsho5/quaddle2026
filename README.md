@@ -9,7 +9,7 @@ Everything is scoped to one university. The idea is proximity: because the perso
 - Everything is scoped to one campus. Quad is open to UIC first, so there is no university to pick at sign-up, and you only see listings from your own campus.
 - Create an account with a username (email optional) and log in with either. Browsing is open to guests; posting, booking, and reviewing need an account.
 - Post listings with a title, description, price, category, and a photo. You can upload a file, drag one in, or paste an image straight from your clipboard.
-- Browse and search listings on your campus.
+- Browse and search listings on your campus. Each card shows how far the listing is from you and the provider's star rating.
 - Pin where you'll meet when you post a listing: search for the address, then drag the pin if it isn't quite right. Browsers see how far each listing is from where they are. Same campus doesn't mean same walk: this is the difference between five minutes and thirty. You can pin a rough area instead of an exact spot, which is what I'd suggest if the pin is where you live.
 - Open the times you're free on your calendar. Students booking any of your listings pick from those times, and a time closes across all of your listings once it's taken, since you can only be in one place at once.
 - Request a booking by picking one of those open times. The provider can accept, decline, or mark it complete, and either side can cancel while it's still open. Declining or cancelling puts the time back on the calendar.

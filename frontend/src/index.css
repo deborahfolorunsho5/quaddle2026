@@ -523,6 +523,28 @@ textarea {
   color: var(--q-rose-deep);
   margin: 0 0 0.6rem;
 }
+.card-rating {
+  margin-left: 0.4rem;
+  color: var(--q-gold);
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.card-rating.new {
+  color: var(--q-sage);
+}
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--q-plum);
+  cursor: pointer;
+}
+.link-button:hover {
+  text-decoration: underline;
+}
 
 /* ---- panels and empty states ---- */
 .card-panel {
