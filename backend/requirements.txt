@@ -3,7 +3,7 @@ fastapi>=0.111
 uvicorn[standard]>=0.30
 
 # Database & migrations
-sqlalchemy>=2.0
+sqlalchemy>=2.0,<2.1     # 2.1 changes driver defaults; upgrade deliberately
 alembic>=1.13
 psycopg2-binary>=2.9      # PostgreSQL driver (production)
 
