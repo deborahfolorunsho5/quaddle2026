@@ -29,9 +29,15 @@ class Settings(BaseSettings):
     @classmethod
     def _normalize_postgres_scheme(cls, value: str) -> str:
         """Managed hosts hand out postgres:// URLs, a scheme SQLAlchemy 2.0 no
-        longer recognises, so the app would die on the first connection."""
-        if value.startswith("postgres://"):
-            return value.replace("postgres://", "postgresql://", 1)
+        longer recognises, so the app would die on the first connection.
+
+        A URL with no driver is also pinned to psycopg2, the one driver in
+        requirements.txt: SQLAlchemy 2.1 changed the default for a bare
+        postgresql:// to psycopg 3, which is not installed. A URL that already
+        names a driver is left alone."""
+        for scheme in ("postgres://", "postgresql://"):
+            if value.startswith(scheme):
+                return "postgresql+psycopg2://" + value[len(scheme):]
         return value
 
 

@@ -12,7 +12,9 @@ config = context.config
 # Use the same database URL the app uses (from .env), so Alembic and the
 # app never drift apart.
 from app.core.config import settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Alembic's config is a ConfigParser, which reads "%" as interpolation, so a
+# percent-encoded character in the password would crash here unless doubled.
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL.replace("%", "%%"))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
