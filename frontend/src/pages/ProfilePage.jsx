@@ -1,17 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import AvailabilityEditor from "../components/AvailabilityEditor";
+import ListingCard from "../components/ListingCard";
 import { Stars, StarInput } from "../components/Stars";
 
 export default function ProfilePage() {
   const { id } = useParams();
   const userId = Number(id);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const [profile, setProfile] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [listings, setListings] = useState(null);
   const [error, setError] = useState("");
 
   // review form
@@ -23,12 +27,17 @@ export default function ProfilePage() {
   const load = useCallback(() => {
     api.getUserProfile(userId).then(setProfile).catch((e) => setError(e.message));
     api.getReviews(userId).then(setReviews).catch(() => {});
+    api
+      .getListings({ owner_id: userId })
+      .then(setListings)
+      .catch(() => setListings([]));
   }, [userId]);
 
   useEffect(() => {
     load();
   }, [load]);
 
+  const isMe = user?.id === userId;
   const alreadyReviewed = reviews.some((r) => user && r.author.id === user.id);
   const canReview = user && user.id !== userId && !alreadyReviewed;
 
@@ -80,7 +89,43 @@ export default function ProfilePage() {
             )}
           </p>
         </div>
+        {isMe && (
+          <button
+            className="btn btn-ghost profile-logout"
+            onClick={() => {
+              logout();
+              navigate("/");
+            }}
+          >
+            Log out
+          </button>
+        )}
       </div>
+
+      <h2 className="section-head">{isMe ? "Your listings" : "Listings"}</h2>
+      {listings === null ? (
+        <p className="muted">Loading…</p>
+      ) : listings.length === 0 ? (
+        <p className="empty">
+          {isMe ? "You have not posted anything yet." : "No listings yet."}
+        </p>
+      ) : (
+        <div className="grid">
+          {listings.map((listing) => (
+            <ListingCard key={listing.id} listing={listing} />
+          ))}
+        </div>
+      )}
+
+      {isMe && (
+        <>
+          <h2 className="section-head">Your availability</h2>
+          <p className="page-sub" style={{ marginBottom: "1rem" }}>
+            Students booking any of your listings pick from these times.
+          </p>
+          <AvailabilityEditor />
+        </>
+      )}
 
       {canReview && (
         <form
@@ -118,7 +163,7 @@ export default function ProfilePage() {
       )}
       {!user && <p className="muted">Log in to leave a review.</p>}
 
-      <h2 style={{ margin: "1.5rem 0 1rem" }}>Reviews</h2>
+      <h2 className="section-head">Reviews</h2>
       {reviews.length === 0 ? (
         <p className="empty">No reviews yet.</p>
       ) : (

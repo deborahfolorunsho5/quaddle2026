@@ -3,16 +3,17 @@ import {
   Routes,
   Route,
   Link,
-  NavLink,
   Navigate,
   useLocation,
-  useNavigate,
 } from "react-router-dom";
 
 import { api } from "./api/client";
+import { MessageIcon } from "./components/icons";
+import TabBar from "./components/TabBar";
 import { useAuth } from "./context/AuthContext";
 import { useCampus } from "./lib/campus";
 import BrowsePage from "./pages/BrowsePage";
+import SearchPage from "./pages/SearchPage";
 import ListingDetailPage from "./pages/ListingDetailPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -56,9 +57,9 @@ function useUnreadCount(enabled) {
 }
 
 function Nav() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const campus = useCampus();
-  const navigate = useNavigate();
+  const location = useLocation();
   const unread = useUnreadCount(Boolean(user));
 
   return (
@@ -70,72 +71,54 @@ function Nav() {
             {campus ? campus.name : "Campus marketplace"}
           </span>
         </Link>
-        <nav className="nav-links">
-          <NavLink to="/" end className="nav-link">
-            Browse
-          </NavLink>
-          {user && (
-            <>
-              <NavLink to="/listings/new" className="nav-link">
-                Post a listing
-              </NavLink>
-              <NavLink to="/bookings" className="nav-link">
-                Bookings
-              </NavLink>
-              <NavLink to="/messages" className="nav-link">
-                Messages
-                {unread > 0 && <span className="badge">{unread}</span>}
-              </NavLink>
-            </>
-          )}
-          {user ? (
-            <>
-              <Link to={`/users/${user.id}`} className="nav-me">
-                @{user.username}
-              </Link>
-              <button
-                className="btn btn-onnavy"
-                onClick={() => {
-                  logout();
-                  navigate("/");
-                }}
-              >
-                Log out
-              </button>
-            </>
-          ) : (
-            <>
-              <NavLink to="/login" className="nav-link">
-                Log in
-              </NavLink>
-              <Link to="/signup" className="btn btn-accent">
-                Sign up
-              </Link>
-            </>
-          )}
-        </nav>
+        {user ? (
+          <Link
+            to="/messages"
+            className="nav-icon"
+            aria-label={unread > 0 ? `Messages, ${unread} unread` : "Messages"}
+          >
+            <MessageIcon />
+            {unread > 0 && <span className="badge">{unread}</span>}
+          </Link>
+        ) : (
+          // Both auth pages already link to each other, and returning to
+          // either one after logging in would be a dead end.
+          !["/login", "/signup"].includes(location.pathname) && (
+            <Link
+              to="/login"
+              state={{ from: location.pathname + location.search }}
+              className="nav-login"
+            >
+              Log in
+            </Link>
+          )
+        )}
       </div>
     </header>
   );
 }
 
-function Footer() {
-  const campus = useCampus();
-  return (
-    <footer className="site-footer">
-      <div>
-        Quad is a student-run marketplace
-        {campus ? ` for ${campus.name}` : ""}. Browsing is open to everyone;
-        posting, booking, and reviewing need an account.
-      </div>
-    </footer>
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  if (loading) return <p className="muted">Loading…</p>;
+  // Remember where they were headed so logging in lands them back there.
+  return user ? (
+    children
+  ) : (
+    <Navigate
+      to="/login"
+      replace
+      state={{ from: location.pathname + location.search }}
+    />
   );
 }
 
-function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
-  if (loading) return <p className="muted">Loading…</p>;
-  return user ? children : <Navigate to="/login" replace />;
+// The Profile tab's target for guests, who have no id to link to until
+// they log in.
+function MyProfileRedirect() {
+  const { user } = useAuth();
+  return <Navigate to={`/users/${user.id}`} replace />;
 }
 
 export default function App() {
@@ -150,6 +133,7 @@ export default function App() {
         ) : (
           <Routes>
             <Route path="/" element={<BrowsePage />} />
+            <Route path="/search" element={<SearchPage />} />
             <Route
               path="/listings/new"
               element={
@@ -160,6 +144,14 @@ export default function App() {
             />
             <Route path="/listings/:id" element={<ListingDetailPage />} />
             <Route path="/users/:id" element={<ProfilePage />} />
+            <Route
+              path="/me"
+              element={
+                <ProtectedRoute>
+                  <MyProfileRedirect />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/availability"
               element={
@@ -198,7 +190,7 @@ export default function App() {
           </Routes>
         )}
       </main>
-      <Footer />
+      <TabBar />
     </>
   );
 }

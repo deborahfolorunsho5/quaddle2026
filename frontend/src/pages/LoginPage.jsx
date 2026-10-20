@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  // Set by ProtectedRoute. Router state never comes from the URL, so this is
+  // always a path inside the app and cannot be used to redirect elsewhere.
+  const from = useLocation().state?.from ?? "/";
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -18,7 +21,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await login(identifier, password);
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (err) {
       setError(err.message);
       setSubmitting(false);
@@ -59,7 +62,11 @@ export default function LoginPage() {
       </form>
 
       <p className="muted" style={{ textAlign: "center", marginTop: "1rem" }}>
-        New here? <Link to="/signup">Sign up</Link> or{" "}
+        New here?{" "}
+        <Link to="/signup" state={{ from }}>
+          Sign up
+        </Link>{" "}
+        or{" "}
         <Link to="/">keep browsing as a guest</Link>.
       </p>
     </div>

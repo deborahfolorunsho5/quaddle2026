@@ -29,10 +29,15 @@ def browse_listings(
     ),
     q: Optional[str] = Query(None, description="Search text in title."),
     category: Optional[str] = Query(None),
+    owner_id: Optional[int] = Query(
+        None, description="Only this user's listings, for their profile."
+    ),
 ):
-    """Browse active listings on a campus. Public, and guests need not say
-    which campus: with Quad open to a single campus, that is the sensible
-    default, and it is what makes the browse page work before sign-up."""
+    """Browse active listings on a campus, or one owner's listings with
+    owner_id (including their inactive ones, if the owner is asking). Public,
+    and guests need not say which campus: with Quad open to a single campus,
+    that is the sensible default, and it is what makes the browse page work
+    before sign-up."""
     campus_id = (
         university_id
         or (current_user.university_id if current_user else None)
@@ -41,9 +46,16 @@ def browse_listings(
 
     stmt = (
         select(Listing)
-        .where(Listing.university_id == campus_id, Listing.is_active.is_(True))
+        .where(Listing.university_id == campus_id)
         .order_by(Listing.created_at.desc())
     )
+    # Inactive listings stay out of everyone's results except their owner's,
+    # so a provider's profile still accounts for everything they have posted.
+    viewing_own = current_user is not None and owner_id == current_user.id
+    if not viewing_own:
+        stmt = stmt.where(Listing.is_active.is_(True))
+    if owner_id is not None:
+        stmt = stmt.where(Listing.owner_id == owner_id)
     if q:
         stmt = stmt.where(Listing.title.ilike(f"%{q}%"))
     if category:
