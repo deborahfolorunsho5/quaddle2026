@@ -8,7 +8,7 @@ Everything is scoped to one university. The idea is proximity: because the perso
 
 - Everything is scoped to one campus. Quad is open to UIC first, so there is no university to pick at sign-up, and you only see listings from your own campus.
 - Create an account with a username (email optional) and log in with either. Browsing is open to guests; posting, booking, and reviewing need an account.
-- Post listings with a title, description, price, category, and a photo. You can upload a file, drag one in, or paste an image straight from your clipboard.
+- Post listings with a title, description, price, category, and up to six photos. You can upload files, drag them in, or paste images straight from your clipboard, and pick which photo is the cover. Edit or hide a listing any time.
 - Browse and search listings on your campus. Each card shows how far the listing is from you and the provider's star rating.
 - Pin where you'll meet when you post a listing: search for the address, then drag the pin if it isn't quite right. Browsers see how far each listing is from where they are. Same campus doesn't mean same walk: this is the difference between five minutes and thirty. You can pin a rough area instead of an exact spot, which is what I'd suggest if the pin is where you live.
 - Open the times you're free on your calendar. Students booking any of your listings pick from those times, and a time closes across all of your listings once it's taken, since you can only be in one place at once.
@@ -105,7 +105,7 @@ npm run dev                       # runs on http://localhost:5173
 | PATCH | /api/listings/{id} | Edit your listing |
 | DELETE | /api/listings/{id} | Delete your listing |
 | GET | /api/geocode?q={text} | Look up coordinates for a typed address |
-| POST | /api/uploads/image | Upload a photo |
+| POST | /api/uploads/image | Upload a photo (resized, re-saved as WEBP, location data stripped) |
 | GET | /api/availability?provider_id={id} | A provider's open, upcoming times |
 | GET | /api/availability/mine | My own times, including the booked ones |
 | POST | /api/availability | Open a time on my calendar |
@@ -128,7 +128,8 @@ npm run dev                       # runs on http://localhost:5173
 Everything the API serves sits under `/api`, which keeps it clear of the
 frontend's own paths (`/listings/:id` and `/users/:id` exist on both sides).
 Uploaded photos are the one exception: they stay on `/media/<filename>` because
-listings already store that path in `image_url`.
+listings already store that path in `image_urls`, an ordered list of up to six
+photos whose first entry is the cover.
 
 A listing body carries an optional `latitude` and `longitude` pair plus a
 `location_is_approximate` flag. The two coordinates have to be sent together,

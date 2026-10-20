@@ -371,6 +371,12 @@ textarea {
   font-size: 0.81rem;
   margin: 0.4rem 0 0;
 }
+.owner-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
 .check {
   display: flex;
   align-items: center;
@@ -476,9 +482,11 @@ textarea {
   border-color: var(--q-rose-light);
   text-decoration: none;
 }
+/* A fixed shape keeps the grid even whatever the photo's own shape; 4:3
+   trims a tall phone shot far less than the old short strip did. */
 .card-img {
   width: 100%;
-  height: 155px;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
   background: var(--q-sand);
   display: block;
@@ -599,14 +607,62 @@ textarea {
 }
 
 /* ---- listing detail ---- */
-.detail-hero {
-  width: 100%;
-  max-height: 420px;
-  object-fit: cover;
+.gallery {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+.gallery-strip {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
   border-radius: var(--q-radius);
   border: 1px solid var(--q-border);
+  background: var(--q-sand);
+}
+.gallery-strip::-webkit-scrollbar {
+  display: none;
+}
+/* The whole photo, letterboxed: on its own page a listing should show what
+   was posted, not a crop. */
+.gallery-strip img {
+  flex: 0 0 100%;
+  width: 100%;
+  height: min(420px, 70vw);
+  object-fit: contain;
+  scroll-snap-align: start;
   display: block;
-  margin-bottom: 1.5rem;
+}
+.gallery-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--q-radius-pill);
+  border: 1px solid var(--q-border);
+  background: var(--q-white);
+  color: var(--q-ink);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.gallery-arrow.prev {
+  left: 0.75rem;
+}
+.gallery-arrow.next {
+  right: 0.75rem;
+}
+.gallery-count {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--q-radius-pill);
+  background: var(--q-white);
+  color: var(--q-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 .detail-head {
   display: flex;
@@ -749,13 +805,61 @@ textarea {
   border-color: var(--q-rose);
   box-shadow: var(--q-ring);
 }
-.preview {
-  max-width: 100%;
-  max-height: 220px;
+.link-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.photo-grid {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+.photo-tile {
+  position: relative;
+  aspect-ratio: 1;
   border-radius: var(--q-radius);
   border: 1px solid var(--q-border);
-  margin-top: 0.75rem;
+  overflow: hidden;
+  background: var(--q-sand);
+}
+.photo-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
+}
+.photo-cover,
+.photo-action {
+  position: absolute;
+  padding: 0.12rem 0.45rem;
+  border-radius: var(--q-radius-pill);
+  font-size: 0.7rem;
+  font-weight: 700;
+  border: none;
+}
+.photo-cover {
+  left: 0.35rem;
+  top: 0.35rem;
+  background: var(--q-plum);
+  color: var(--q-white);
+}
+.photo-action {
+  background: var(--q-white);
+  color: var(--q-plum);
+  cursor: pointer;
+}
+.photo-make-cover {
+  left: 0.35rem;
+  top: 0.35rem;
+}
+.photo-remove {
+  right: 0.35rem;
+  bottom: 0.35rem;
+  color: var(--q-rose-deep);
 }
 
 /* ---- maps and distance ---- */

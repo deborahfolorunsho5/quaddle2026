@@ -17,7 +17,7 @@ import SearchPage from "./pages/SearchPage";
 import ListingDetailPage from "./pages/ListingDetailPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
-import CreateListingPage from "./pages/CreateListingPage";
+import ListingFormPage from "./pages/ListingFormPage";
 import ProfilePage from "./pages/ProfilePage";
 import AvailabilityPage from "./pages/AvailabilityPage";
 import BookingsPage from "./pages/BookingsPage";
@@ -138,7 +138,15 @@ export default function App() {
               path="/listings/new"
               element={
                 <ProtectedRoute>
-                  <CreateListingPage />
+                  <ListingFormPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/listings/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <ListingFormPage />
                 </ProtectedRoute>
               }
             />
