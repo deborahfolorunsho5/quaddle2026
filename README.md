@@ -99,7 +99,7 @@ npm run dev                       # runs on http://localhost:5173
 | POST | /api/auth/login | Log in and get a token |
 | GET | /api/users/me | The logged-in user's profile |
 | GET | /api/users/{id} | A public profile with their rating |
-| GET | /api/listings | Browse and search listings, defaulting to the active campus |
+| GET | /api/listings | Browse and search listings, defaulting to the active campus. `owner_id` narrows to one user's listings |
 | POST | /api/listings | Post a listing |
 | GET | /api/listings/{id} | View one listing |
 | PATCH | /api/listings/{id} | Edit your listing |

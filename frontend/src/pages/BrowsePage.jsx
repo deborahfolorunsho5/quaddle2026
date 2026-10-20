@@ -1,69 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 
-import { api, mediaUrl } from "../api/client";
+import { api } from "../api/client";
+import ListingCard from "../components/ListingCard";
 import ListingsMap from "../components/ListingsMap";
 import { useCampus } from "../lib/campus";
-import { distanceMiles, formatMiles, formatWalk, pinOf } from "../lib/geo";
+import { distanceMiles, pinOf } from "../lib/geo";
 import { useMyLocation } from "../lib/useMyLocation";
-
-// Compact "4.8 ★ (12)" for a card. An unrated provider says so plainly
-// rather than showing zero stars, which would read as a bad rating.
-function CardRating({ owner }) {
-  if (!owner.rating_count) {
-    return <span className="card-rating new">New</span>;
-  }
-  const count = owner.rating_count;
-  return (
-    <span
-      className="card-rating"
-      title={`${owner.rating_average} out of 5 from ${count} review${count > 1 ? "s" : ""}`}
-    >
-      {owner.rating_average.toFixed(1)} ★ ({count})
-    </span>
-  );
-}
-
-function ListingCard({ listing, miles }) {
-  const img = mediaUrl(listing.image_url);
-  return (
-    <Link to={`/listings/${listing.id}`} className="card">
-      {img ? (
-        <img className="card-img" src={img} alt={listing.title} />
-      ) : (
-        <div className="card-img placeholder">No photo</div>
-      )}
-      <div className="card-body">
-        {listing.category && <p className="eyebrow">{listing.category}</p>}
-        <p className="card-title">{listing.title}</p>
-        <p className="card-desc">{listing.description}</p>
-        {miles != null && (
-          <p className="card-walk">
-            {formatMiles(miles)} away · {formatWalk(miles)}
-          </p>
-        )}
-        <div className="card-foot">
-          <span className="price">${Number(listing.price).toFixed(2)}</span>
-          {listing.owner && (
-            <span className="card-by">
-              @{listing.owner.username}
-              <CardRating owner={listing.owner} />
-            </span>
-          )}
-        </div>
-      </div>
-    </Link>
-  );
-}
 
 export default function BrowsePage() {
   const campus = useCampus();
   const { position, status, request } = useMyLocation();
 
-  const [q, setQ] = useState("");
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [category, setCategory] = useState(null);
   const [sort, setSort] = useState("newest");
   const [showMap, setShowMap] = useState(false);
   const [error, setError] = useState("");
@@ -72,10 +21,8 @@ export default function BrowsePage() {
   // to, and a logged-in student to their own.
   useEffect(() => {
     let alive = true;
-    setError("");
-    setLoading(true);
     api
-      .getListings({ q })
+      .getListings()
       .then((rows) => {
         if (alive) setListings(rows);
       })
@@ -85,29 +32,13 @@ export default function BrowsePage() {
       .finally(() => {
         if (alive) setLoading(false);
       });
-    // A slow earlier response must not overwrite a newer search.
     return () => {
       alive = false;
     };
-  }, [q]);
-
-  // Categories present on this campus, for the filter row.
-  const categories = useMemo(() => {
-    const seen = new Set();
-    for (const l of listings) if (l.category) seen.add(l.category);
-    return [...seen].sort();
-  }, [listings]);
-
-  // Drop the active category if it's no longer on this campus.
-  useEffect(() => {
-    if (category && !categories.includes(category)) setCategory(null);
-  }, [categories, category]);
+  }, []);
 
   const shown = useMemo(() => {
-    const filtered = category
-      ? listings.filter((l) => l.category === category)
-      : listings;
-    const measured = filtered.map((listing) => {
+    const measured = listings.map((listing) => {
       const pin = pinOf(listing);
       return {
         listing,
@@ -122,7 +53,7 @@ export default function BrowsePage() {
       if (b.miles == null) return -1;
       return a.miles - b.miles;
     });
-  }, [listings, category, position, sort]);
+  }, [listings, position, sort]);
 
   // Stable identity for ListingsMap, which fits its view to these pins.
   const shownListings = useMemo(() => shown.map((x) => x.listing), [shown]);
@@ -147,38 +78,7 @@ export default function BrowsePage() {
         </p>
       </div>
 
-      <div className="toolbar">
-        <div className="field">
-          <label>Search listings</label>
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="e.g. tutoring, haircut, photography…"
-          />
-        </div>
-      </div>
-
       {error && <div className="error">{error}</div>}
-
-      {categories.length > 0 && (
-        <div className="chips">
-          <button
-            className={`chip${category === null ? " on" : ""}`}
-            onClick={() => setCategory(null)}
-          >
-            All
-          </button>
-          {categories.map((c) => (
-            <button
-              key={c}
-              className={`chip${category === c ? " on" : ""}`}
-              onClick={() => setCategory(c)}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-      )}
 
       {anyPinned && (
         <div className="viewbar">
@@ -222,9 +122,7 @@ export default function BrowsePage() {
         <p className="muted">Loading listings…</p>
       ) : shown.length === 0 ? (
         <p className="empty">
-          {q
-            ? `Nothing matches "${q}" yet.`
-            : "No listings yet. Be the first to post one."}
+          No listings yet. Be the first to post one.
         </p>
       ) : showMap && anyPinned ? (
         <ListingsMap listings={shownListings} me={position} />

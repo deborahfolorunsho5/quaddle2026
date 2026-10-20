@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 import { useCampus } from "../lib/campus";
@@ -8,6 +8,9 @@ export default function SignupPage() {
   const { register } = useAuth();
   const campus = useCampus();
   const navigate = useNavigate();
+  // Carried over from the login page, so signing up instead of logging in
+  // still returns them to the tab they tapped.
+  const from = useLocation().state?.from ?? "/";
 
   const [form, setForm] = useState({
     username: "",
@@ -36,7 +39,7 @@ export default function SignupPage() {
         email: form.email || null,
         full_name: form.full_name || null,
       });
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (err) {
       setError(err.message);
       setSubmitting(false);
@@ -100,7 +103,10 @@ export default function SignupPage() {
       </form>
 
       <p className="muted" style={{ textAlign: "center", marginTop: "1rem" }}>
-        Already have an account? <Link to="/login">Log in</Link>
+        Already have an account?{" "}
+        <Link to="/login" state={{ from }}>
+          Log in
+        </Link>
       </p>
     </div>
   );
