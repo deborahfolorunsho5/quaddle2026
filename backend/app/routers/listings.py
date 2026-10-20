@@ -1,20 +1,26 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.campus import get_active_campus
 from app.core.deps import get_current_user, get_current_user_optional
 from app.db.session import get_db
 from app.models.listing import Listing
+from app.models.review import Review
 from app.models.user import User
-from app.schemas.listing import ListingCreate, ListingRead, ListingUpdate
+from app.schemas.listing import (
+    ListingBrowseItem,
+    ListingCreate,
+    ListingRead,
+    ListingUpdate,
+)
 
 router = APIRouter(prefix="/listings", tags=["listings"])
 
 
-@router.get("", response_model=list[ListingRead])
+@router.get("", response_model=list[ListingBrowseItem])
 def browse_listings(
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional),
@@ -43,7 +49,34 @@ def browse_listings(
     if category:
         stmt = stmt.where(Listing.category == category)
 
-    return db.scalars(stmt).all()
+    listings = db.scalars(stmt).all()
+    ratings = _owner_ratings(db, {listing.owner_id for listing in listings})
+
+    items = []
+    for listing in listings:
+        item = ListingBrowseItem.model_validate(listing)
+        if listing.owner_id in ratings:
+            item.owner.rating_average, item.owner.rating_count = ratings[
+                listing.owner_id
+            ]
+        items.append(item)
+    return items
+
+
+def _owner_ratings(db: Session, owner_ids: set[int]) -> dict[int, tuple[float, int]]:
+    """Average and count of reviews per owner, in one grouped query rather
+    than one per card. Owners with no reviews are simply absent."""
+    if not owner_ids:
+        return {}
+    rows = db.execute(
+        select(Review.subject_id, func.avg(Review.rating), func.count(Review.id))
+        .where(Review.subject_id.in_(owner_ids))
+        .group_by(Review.subject_id)
+    ).all()
+    # Rounded the same way as the profile endpoint so the two never disagree.
+    return {
+        subject_id: (round(float(avg), 2), count) for subject_id, avg, count in rows
+    }
 
 
 @router.get("/{listing_id}", response_model=ListingRead)
