@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone  # noqa: E402
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
-from sqlalchemy import create_engine  # noqa: E402
+from sqlalchemy import create_engine, make_url  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
@@ -25,22 +25,40 @@ from app.models.university import University  # noqa: E402
 from app.models.user import User  # noqa: E402
 
 
+# Set this to run the suite against PostgreSQL instead, for behavior the two
+# databases do not share (timezones, constraints). Every test drops all
+# tables, so only a database named *_test is accepted.
+TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
+
+
+def _test_engine():
+    if not TEST_DATABASE_URL:
+        # StaticPool keeps the one connection alive: each new connection to
+        # "sqlite://" would otherwise be an empty database of its own.
+        return create_engine(
+            "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+        )
+    name = make_url(TEST_DATABASE_URL).database or ""
+    if not name.endswith("_test"):
+        pytest.exit(
+            f"TEST_DATABASE_URL names {name!r}. The tests drop every table, so "
+            "point it at a database whose name ends in _test.",
+            returncode=2,
+        )
+    return create_engine(TEST_DATABASE_URL)
+
+
 @pytest.fixture
 def db():
-    """A fresh in-memory database per test, built from the models.
-
-    StaticPool keeps the single connection alive, since each new connection to
-    "sqlite://" would otherwise be an empty database of its own. The schema
-    comes from the models rather than Alembic, because one migration alters a
-    constraint, which SQLite cannot do outside batch mode.
-    """
-    engine = create_engine(
-        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
-    )
+    """A fresh database per test, built from the models: quicker than running
+    every migration per test, and the migrations are checked separately."""
+    engine = _test_engine()
+    Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     session = sessionmaker(bind=engine, autoflush=False)()
     yield session
     session.close()
+    Base.metadata.drop_all(engine)
     engine.dispose()
 
 

@@ -98,7 +98,7 @@ The backend has a `pytest` suite in `backend/tests/`, run from `backend/` with `
 - Covered so far: the campus-wide open slots endpoint, booking creation, every booking status transition (who may move a booking to which state, and when a slot is released), review constraints (rating range, one-per-pair, who may delete), campus scoping on browse, bookings, reviews, calendars and messages, listing ownership, and which routes turn guests away. Not yet covered: uploads, message sending and read state, and availability slot creation (overlaps, length cap). Add tests there before relying on those rules.
 - Write the expected rule into the test rather than importing it from the code under test, so a bug in the rule cannot make its own test pass.
 - When you implement or change backend behavior, add or update a test, and also verify it against the running API (`uvicorn app.main:app --reload`, then exercise it through `/docs` or a request). Say exactly what you checked.
-- The suite runs on SQLite, not PostgreSQL. Behavior that differs between the two (timezone handling, constraint changes) still needs a check against Postgres.
+- The suite runs on SQLite by default. For behavior that differs between the two databases (timezone handling, constraint changes), also run it against Postgres by setting `TEST_DATABASE_URL` to a database whose name ends in `_test` (see the README). Never point it at the dev database; the name check exists because every test drops all tables.
 - If you cannot run something in the current environment, **say so plainly** instead of implying success.
 
 ## Review your own output (required)

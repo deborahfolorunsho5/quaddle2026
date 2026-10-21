@@ -91,6 +91,13 @@ pytest
 
 The tests build a fresh in-memory SQLite database for each test, so they never touch the database in your `.env`.
 
+To run the same tests against PostgreSQL, create a database whose name ends in `_test` and point `TEST_DATABASE_URL` at it. The tests drop every table between runs, so any other name is refused.
+
+```bash
+docker compose exec db psql -U quaddle -c "create database quaddle_test"
+TEST_DATABASE_URL=postgresql+psycopg2://quaddle:<password>@localhost:5433/quaddle_test pytest
+```
+
 ### 3. Frontend
 
 ```bash
