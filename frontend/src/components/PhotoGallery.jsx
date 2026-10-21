@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 
 import { mediaUrl } from "../api/client";
+import Photo from "./Photo";
 
 // A listing's photos as a swipeable strip. Scroll snapping gives phones a
 // native swipe for free; the arrows are for a mouse, which cannot swipe.
@@ -26,8 +27,9 @@ export default function PhotoGallery({ urls, title }) {
         }}
       >
         {urls.map((url, i) => (
-          <img
+          <Photo
             key={`${url}-${i}`}
+            className="gallery-slide"
             src={mediaUrl(url)}
             alt={urls.length > 1 ? `${title}, photo ${i + 1}` : title}
           />

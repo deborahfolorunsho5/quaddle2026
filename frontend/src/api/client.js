@@ -49,6 +49,9 @@ export const api = {
       form: new URLSearchParams({ username, password }),
     }),
   getMe: () => request("/users/me"),
+  // Profile photo. Upload it with uploadImage first and send the image_url
+  // it returns; null removes it.
+  updateMe: (data) => request("/users/me", { method: "PATCH", body: data }),
 
   // --- profiles & reviews ---
   getUserProfile: (id) => request(`/users/${id}`),

@@ -23,15 +23,21 @@ export default function MessagesPage() {
       <div className="page-head">
         <h1>Messages</h1>
         <p className="page-sub">
-          Your threads with other students on campus. Start one from a listing
-          or from a booking.
+          Your conversations with other students on campus.
         </p>
       </div>
 
       {conversations.length === 0 ? (
-        <p className="empty">
-          No messages yet. Open a listing and message the student who posted it.
-        </p>
+        <div className="empty">
+          <p>No conversations yet.</p>
+          <p>
+            Found someone you want to book? Tap Message on their listing or
+            profile to ask a question first.
+          </p>
+          <Link className="btn btn-primary" to="/search">
+            Find someone
+          </Link>
+        </div>
       ) : (
         <ul className="thread-list">
           {conversations.map((c) => (

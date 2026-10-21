@@ -114,6 +114,7 @@ npm run dev                       # runs on http://localhost:5173
 | POST | /api/auth/register | Create an account |
 | POST | /api/auth/login | Log in and get a token |
 | GET | /api/users/me | The logged-in user's profile |
+| PATCH | /api/users/me | Change my profile photo (upload it first, then send its `/media/...` path; null removes it) |
 | GET | /api/users/{id} | A public profile with their rating |
 | GET | /api/listings | Browse and search listings, defaulting to the active campus. `owner_id` narrows to one user's listings |
 | POST | /api/listings | Post a listing |

@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 
 import { api, mediaUrl } from "../api/client";
 import { SearchIcon } from "../components/icons";
+import Photo from "../components/Photo";
 import { distanceMiles, formatWalkShort, pinOf } from "../lib/geo";
 import { useMyLocation } from "../lib/useMyLocation";
 
@@ -168,7 +169,7 @@ export default function SearchPage() {
                     .join(", ")}
                 >
                   {img ? (
-                    <img src={img} alt="" loading="lazy" />
+                    <Photo src={img} />
                   ) : (
                     <span className="explore-tile-title">{listing.title}</span>
                   )}

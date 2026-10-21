@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 import { api, mediaUrl } from "../api/client";
 import ListingCard from "../components/ListingCard";
 import ListingsMap from "../components/ListingsMap";
+import Photo from "../components/Photo";
 import { useAuth } from "../context/AuthContext";
-import { useCampus } from "../lib/campus";
 import { formatTime, formatWhen } from "../lib/datetime";
 import { distanceMiles, formatWalk, pinOf } from "../lib/geo";
 import { useMyLocation } from "../lib/useMyLocation";
@@ -14,6 +14,31 @@ const OPEN_ROW_LIMIT = 10;
 const CATEGORY_TILE_LIMIT = 4;
 const FRESH_DAYS = 7;
 const FRESH_LIMIT = 6;
+// The line under the greeting. A different one each visit keeps the page from
+// feeling like a form you have already read.
+const TAGLINES = [
+  "Who are you booking next?",
+  "Somebody on campus is good at exactly what you need.",
+  "Skip the group chat. Book it here.",
+  "Treat yourself. Someone nearby is taking bookings.",
+  "Support a classmate's side hustle today.",
+  "The best services on campus are run by students.",
+];
+const LAST_TAGLINE_KEY = "quaddle_last_tagline";
+
+/** A random tagline index, never the one shown on the previous visit.
+    Storage can be blocked (private windows), and then any line will do. */
+function pickTagline() {
+  let last = -1;
+  try {
+    last = Number(localStorage.getItem(LAST_TAGLINE_KEY) ?? -1);
+  } catch {
+    // No memory of the last one, so any line is fine.
+  }
+  const choices = TAGLINES.map((_, i) => i).filter((i) => i !== last);
+  return choices[Math.floor(Math.random() * choices.length)];
+}
+
 // A booking in one of these is still going to happen.
 const UPCOMING_STATUSES = new Set(["pending", "accepted"]);
 
@@ -65,7 +90,7 @@ function NextBooking({ entry, listing }) {
     <section className="home-section">
       <h2 className="home-head">Your next booking</h2>
       <Link to="/bookings" className="next-booking">
-        {img && <img className="next-booking-img" src={img} alt="" />}
+        {img && <Photo className="next-booking-img" src={img} />}
         <div className="next-booking-body">
           <span className="next-booking-title">{booking.listing.title}</span>
           <span className="next-booking-when">
@@ -99,7 +124,7 @@ function OpenSoon({ items, day, located }) {
               <li key={listing.id}>
                 <Link className="open-card" to={`/listings/${listing.id}`}>
                   <div className="open-card-img">
-                    {img ? <img src={img} alt="" /> : <span>No photo</span>}
+                    {img ? <Photo src={img} /> : <span>No photo</span>}
                     {miles != null && (
                       <span className="open-card-walk">{formatWalk(miles)}</span>
                     )}
@@ -162,7 +187,7 @@ function FreshListings({ listings }) {
             <li key={listing.id}>
               <Link className="fresh-card" to={`/listings/${listing.id}`}>
                 <div className="fresh-card-img">
-                  {img ? <img src={img} alt="" /> : <span>No photo</span>}
+                  {img ? <Photo src={img} /> : <span>No photo</span>}
                   <span className="fresh-card-price">{priceOf(listing)}</span>
                 </div>
                 <span className="fresh-card-title">{listing.title}</span>
@@ -185,7 +210,17 @@ function FreshListings({ listings }) {
 
 export default function HomePage() {
   const { user } = useAuth();
-  const campus = useCampus();
+  // Picked once per visit, not per render, so it does not flicker. Saved only
+  // after it shows: React may run this initializer twice in development, and
+  // saving there could remember a line that was never on screen.
+  const [taglineIndex] = useState(pickTagline);
+  useEffect(() => {
+    try {
+      localStorage.setItem(LAST_TAGLINE_KEY, String(taglineIndex));
+    } catch {
+      // Not remembering it only means it might repeat next time.
+    }
+  }, [taglineIndex]);
   const { position, status, request } = useMyLocation();
 
   const [listings, setListings] = useState([]);
@@ -326,11 +361,7 @@ export default function HomePage() {
       <div className="page-head">
         <p className="eyebrow">{partOfDay(new Date())}</p>
         <h1>{user ? `Hi @${user.username}` : "What students offer on campus"}</h1>
-        <p className="page-sub">
-          {campus
-            ? `Every listing is posted by a ${campus.name} student, so whoever you book is a walk away.`
-            : "Every listing is posted by a student on your campus, so whoever you book is a walk away."}
-        </p>
+        <p className="page-sub">{TAGLINES[taglineIndex]}</p>
       </div>
 
       {error && <div className="error">{error}</div>}

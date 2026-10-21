@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 
 import { mediaUrl } from "../api/client";
 import { formatMiles, formatWalk } from "../lib/geo";
+import Photo from "./Photo";
 
 // Compact "4.8 ★ (12)" for a card. An unrated provider says so plainly
 // rather than showing zero stars, which would read as a bad rating.
@@ -25,7 +26,7 @@ export default function ListingCard({ listing, miles }) {
   return (
     <Link to={`/listings/${listing.id}`} className="card">
       {img ? (
-        <img className="card-img" src={img} alt={listing.title} />
+        <Photo className="card-img" src={img} alt={listing.title} />
       ) : (
         <div className="card-img placeholder">No photo</div>
       )}
