@@ -21,7 +21,7 @@ function CardRating({ owner }) {
 }
 
 export default function ListingCard({ listing, miles }) {
-  const img = mediaUrl(listing.image_url);
+  const img = mediaUrl(listing.image_urls[0]);
   return (
     <Link to={`/listings/${listing.id}`} className="card">
       {img ? (

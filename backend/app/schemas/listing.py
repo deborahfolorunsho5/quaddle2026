@@ -1,13 +1,18 @@
 from datetime import datetime
 
+from typing import Annotated
+
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+MAX_PHOTOS = 6
+# Matches the old image_url column, so an existing URL always fits.
+PhotoUrl = Annotated[str, Field(min_length=1, max_length=500)]
 
 # Three decimal places is roughly 100 m, which reads as "this block" on a map
 # without narrowing a provider down to a doorway.
 APPROX_DECIMALS = 3
 
-# Every column on Listing except category, image_url, and the two coordinates
-# is NOT NULL. An explicit null for one of those reaches the database as None
+# Every column on Listing except category and the two coordinates is NOT NULL. An explicit null for one of those reaches the database as None
 # and surfaces as a 500, so a PATCH must refuse it: leaving a field out is how
 # a PATCH says "do not touch this".
 NOT_NULLABLE_FIELDS = (
@@ -16,6 +21,7 @@ NOT_NULLABLE_FIELDS = (
     "price",
     "is_active",
     "location_is_approximate",
+    "image_urls",
 )
 
 
@@ -33,7 +39,7 @@ class ListingCreate(BaseModel):
     description: str = Field(min_length=1)
     price: float = Field(ge=0)
     category: str | None = None
-    image_url: str | None = None
+    image_urls: list[PhotoUrl] = Field(default_factory=list, max_length=MAX_PHOTOS)
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
     location_is_approximate: bool = False
@@ -52,7 +58,8 @@ class ListingUpdate(BaseModel):
     description: str | None = Field(default=None, min_length=1)
     price: float | None = Field(default=None, ge=0)
     category: str | None = None
-    image_url: str | None = None
+    # Replaces the whole list: send every photo to keep, in order.
+    image_urls: list[PhotoUrl] | None = Field(default=None, max_length=MAX_PHOTOS)
     is_active: bool | None = None
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
@@ -86,7 +93,7 @@ class ListingRead(BaseModel):
     description: str
     price: float
     category: str | None
-    image_url: str | None
+    image_urls: list[str]
     is_active: bool
     university_id: int
     created_at: datetime

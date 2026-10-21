@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import String, Text, Numeric, Float, ForeignKey, DateTime, func
+from sqlalchemy import JSON, String, Text, Numeric, Float, ForeignKey, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -17,7 +17,10 @@ class Listing(Base):
     description: Mapped[str] = mapped_column(Text)
     price: Mapped[float] = mapped_column(Numeric(10, 2))
     category: Mapped[str | None] = mapped_column(String(50), index=True, nullable=True)
-    image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    # Ordered photo URLs; the first is the cover shown on browse cards. A
+    # list on the row rather than a table, since photos are only ever read
+    # and replaced together with their listing.
+    image_urls: Mapped[list[str]] = mapped_column(JSON, default=list)
 
     # Where the provider meets the customer, pinned on a map when posting.
     # Optional: listings posted before the map existed have no pin, and a

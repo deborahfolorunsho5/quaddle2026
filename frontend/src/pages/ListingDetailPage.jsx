@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
-import { api, mediaUrl } from "../api/client";
+import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { Stars } from "../components/Stars";
 import ListingsMap from "../components/ListingsMap";
+import PhotoGallery from "../components/PhotoGallery";
 import SlotPicker from "../components/SlotPicker";
 import { formatDay, formatWhen } from "../lib/datetime";
 import { distanceMiles, formatDistanceAndWalk, pinOf } from "../lib/geo";
@@ -128,7 +129,6 @@ export default function ListingDetailPage() {
   if (error) return <div className="error">{error}</div>;
   if (!listing) return <p className="muted">Loading…</p>;
 
-  const img = mediaUrl(listing.image_url);
   const isOwner = user && user.id === listing.owner.id;
   const pin = pinOf(listing);
   const hasOpenings = slots !== null && slots.length > 0;
@@ -140,7 +140,7 @@ export default function ListingDetailPage() {
       </Link>
 
       <article className="card-panel">
-        {img && <img className="detail-hero" src={img} alt={listing.title} />}
+        <PhotoGallery urls={listing.image_urls} title={listing.title} />
 
         {listing.category && <p className="eyebrow">{listing.category}</p>}
         <div className="detail-head">
@@ -321,9 +321,14 @@ export default function ListingDetailPage() {
         </section>
 
         {isOwner && (
-          <button className="btn btn-danger" onClick={onDelete}>
-            Delete listing
-          </button>
+          <div className="owner-actions">
+            <Link className="btn btn-ghost" to={`/listings/${listing.id}/edit`}>
+              Edit listing
+            </Link>
+            <button className="btn btn-danger" onClick={onDelete}>
+              Delete listing
+            </button>
+          </div>
         )}
       </article>
     </>

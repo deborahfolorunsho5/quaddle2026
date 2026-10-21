@@ -19,3 +19,4 @@ certifi>=2024.2            # CA bundle; some Python builds ship without one
 python-jose[cryptography]>=3.3   # JWT
 bcrypt>=4.1                      # password hashing
 python-multipart>=0.0.9          # form / file uploads
+pillow>=11.0                     # resizes and re-encodes uploaded photos
