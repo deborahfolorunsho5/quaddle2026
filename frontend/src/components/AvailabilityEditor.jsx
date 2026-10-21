@@ -17,6 +17,12 @@ const DURATIONS = [
   { minutes: 90, label: "1 hour 30" },
   { minutes: 120, label: "2 hours" },
   { minutes: 180, label: "3 hours" },
+  { minutes: 240, label: "4 hours" },
+  { minutes: 300, label: "5 hours" },
+  { minutes: 360, label: "6 hours" },
+  { minutes: 480, label: "8 hours" },
+  // MAX_SLOT_HOURS in backend/app/schemas/availability.py; it refuses longer.
+  { minutes: 720, label: "12 hours" },
 ];
 
 export default function AvailabilityEditor() {

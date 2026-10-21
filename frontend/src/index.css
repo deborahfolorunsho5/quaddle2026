@@ -472,6 +472,36 @@ textarea {
   margin-bottom: 0;
 }
 
+/* ---- photos ---- */
+/* Any photo, any shape, shown whole inside whatever box holds it (components/
+   Photo.jsx). What it leaves uncovered is a blurred, faded copy of itself, so
+   a tall phone shot in a wide card reads as a photo, not as a photo with bars. */
+.photo {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: var(--q-sand);
+  isolation: isolate;
+}
+.photo-backdrop,
+.photo-main {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+/* Scaled up a little so the blur's soft edge falls outside the box. */
+.photo-backdrop {
+  object-fit: cover;
+  transform: scale(1.15);
+  filter: blur(14px) saturate(1.1);
+  opacity: 0.6;
+}
+.photo-main {
+  object-fit: contain;
+}
+
 /* ---- listing grid ---- */
 .grid {
   display: grid;
@@ -492,12 +522,11 @@ textarea {
   border-color: var(--q-rose-light);
   text-decoration: none;
 }
-/* A fixed shape keeps the grid even whatever the photo's own shape; 4:3
-   trims a tall phone shot far less than the old short strip did. */
+/* A fixed shape keeps the grid even whatever the photo's own shape. The photo
+   inside is shown whole (see .photo), never cropped to fit. */
 .card-img {
   width: 100%;
   aspect-ratio: 4 / 3;
-  object-fit: cover;
   background: var(--q-sand);
   display: block;
 }
@@ -605,6 +634,18 @@ textarea {
   padding: 3rem 1.25rem;
   margin: 0;
 }
+/* An empty state with a heading line, a hint and a way forward. */
+.empty > p {
+  max-width: 34ch;
+  margin: 0 auto 0.5rem;
+}
+.empty > p:first-child {
+  color: var(--q-ink);
+  font-weight: 700;
+}
+.empty > .btn {
+  margin-top: 0.9rem;
+}
 .back-link {
   display: inline-block;
   color: var(--q-muted);
@@ -633,15 +674,11 @@ textarea {
 .gallery-strip::-webkit-scrollbar {
   display: none;
 }
-/* The whole photo, letterboxed: on its own page a listing should show what
-   was posted, not a crop. */
-.gallery-strip img {
+/* On its own page a listing shows each photo whole, like everywhere else. */
+.gallery-slide {
   flex: 0 0 100%;
-  width: 100%;
   height: min(420px, 70vw);
-  object-fit: contain;
   scroll-snap-align: start;
-  display: block;
 }
 .gallery-arrow {
   position: absolute;
@@ -836,11 +873,9 @@ textarea {
   overflow: hidden;
   background: var(--q-sand);
 }
-.photo-tile img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+.photo-tile .photo {
+  position: absolute;
+  inset: 0;
 }
 .photo-cover,
 .photo-action {
@@ -1397,8 +1432,6 @@ textarea {
   height: 64px;
   flex-shrink: 0;
   border-radius: 10px;
-  object-fit: cover;
-  background: var(--q-sand);
 }
 .next-booking-body {
   display: flex;
@@ -1480,13 +1513,10 @@ textarea {
 .open-card-img {
   aspect-ratio: 4 / 5;
 }
-.open-card-img img,
-.fresh-card-img img {
+.open-card-img .photo,
+.fresh-card-img .photo {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 .open-card-walk,
 .fresh-card-price {
@@ -1628,6 +1658,36 @@ textarea {
 .profile-id p {
   margin: 0.15rem 0 0;
 }
+/* A photo fills the same circle the initial sits in, cropped to it: a face
+   reads at this size, and every avatar keeps one shape. */
+img.avatar {
+  object-fit: cover;
+  padding: 0;
+}
+.avatar-lg {
+  width: 72px;
+  height: 72px;
+  font-size: 1.8rem;
+}
+.profile-editor {
+  margin: 0.5rem 0 1rem;
+  max-width: 560px;
+}
+.profile-editor h2 {
+  margin-bottom: 1rem;
+}
+.profile-editor-photo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.profile-editor-photo-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
 .profile-about {
   margin: 0 0 1rem;
   color: var(--q-muted);
@@ -1662,14 +1722,11 @@ textarea {
   flex: 0 0 132px;
   scroll-snap-align: start;
 }
-.work-strip img {
-  display: block;
+.work-strip .photo {
   width: 100%;
   aspect-ratio: 4 / 5;
-  object-fit: cover;
   border: 1px solid var(--q-border);
   border-radius: var(--q-radius);
-  background: var(--q-sand);
 }
 
 /* A provider's listings read as a menu of services, so a list, not a grid. */
@@ -1701,7 +1758,6 @@ textarea {
   height: 56px;
   flex-shrink: 0;
   border-radius: 10px;
-  object-fit: cover;
   background: var(--q-sand);
   display: flex;
   align-items: center;
@@ -1877,15 +1933,14 @@ textarea {
 .explore-tile:hover {
   text-decoration: none;
 }
-.explore-tile img {
+.explore-tile .photo {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+}
+.explore-tile .photo-main {
   transition: transform 0.15s ease;
 }
-.explore-tile:hover img {
+.explore-tile:hover .photo-main {
   transform: scale(1.03);
 }
 .explore-tile:focus-visible {

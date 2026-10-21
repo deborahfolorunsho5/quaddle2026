@@ -5,6 +5,7 @@ import { api, mediaUrl } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { pinOf } from "../lib/geo";
 import LocationPicker from "../components/LocationPicker";
+import Photo from "../components/Photo";
 
 // Mirrors MAX_PHOTOS in backend/app/schemas/listing.py, which enforces it.
 const MAX_PHOTOS = 6;
@@ -308,7 +309,7 @@ export default function ListingFormPage() {
                 <ul className="photo-grid">
                   {imageUrls.map((url, index) => (
                     <li key={`${url}-${index}`} className="photo-tile">
-                      <img src={mediaUrl(url)} alt={`Photo ${index + 1}`} />
+                      <Photo src={mediaUrl(url)} alt={`Photo ${index + 1}`} />
                       {index === 0 ? (
                         <span className="photo-cover">Cover</span>
                       ) : (

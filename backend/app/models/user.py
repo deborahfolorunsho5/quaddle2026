@@ -22,6 +22,9 @@ class User(Base):
     # We never store the raw password — only a bcrypt hash of it.
     hashed_password: Mapped[str] = mapped_column(String(255))
     full_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    # "/media/<file>" from the upload endpoint, never an outside link: an
+    # uploaded photo has been resized, re-encoded and stripped of EXIF.
+    avatar_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     university_id: Mapped[int] = mapped_column(
         ForeignKey("universities.id"), index=True

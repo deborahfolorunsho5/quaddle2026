@@ -5,6 +5,8 @@ import { api, mediaUrl } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import AvailabilityEditor from "../components/AvailabilityEditor";
 import BookingForm from "../components/BookingForm";
+import Photo from "../components/Photo";
+import ProfileEditor from "../components/ProfileEditor";
 import { Stars, StarInput } from "../components/Stars";
 import { formatDay } from "../lib/datetime";
 import { distanceMiles, formatMiles, pinOf } from "../lib/geo";
@@ -26,6 +28,7 @@ export default function ProfilePage() {
   const [listings, setListings] = useState(null);
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
+  const [editing, setEditing] = useState(false);
 
   // review form
   const [rating, setRating] = useState(0);
@@ -134,7 +137,15 @@ export default function ProfilePage() {
     <>
       <section className="profile-top">
         <div className="profile-head">
-          <div className="avatar">{profile.username.slice(0, 1)}</div>
+          {profile.avatar_url ? (
+            <img
+              className="avatar avatar-lg"
+              src={mediaUrl(profile.avatar_url)}
+              alt={`@${profile.username}`}
+            />
+          ) : (
+            <div className="avatar avatar-lg">{profile.username.slice(0, 1)}</div>
+          )}
           <div className="profile-id">
             <h1>@{profile.username}</h1>
             {profile.full_name && <p className="muted">{profile.full_name}</p>}
@@ -165,6 +176,25 @@ export default function ProfilePage() {
 
         {actionError && <div className="error">{actionError}</div>}
 
+        {isMe && !editing && (
+          <div className="profile-actions">
+            <button className="btn btn-ghost" type="button" onClick={() => setEditing(true)}>
+              Edit profile
+            </button>
+          </div>
+        )}
+
+        {isMe && editing && (
+          <ProfileEditor
+            profile={profile}
+            onCancel={() => setEditing(false)}
+            onSaved={() => {
+              setEditing(false);
+              load();
+            }}
+          />
+        )}
+
         {!isMe && (bookable.length > 0 || user) && (
           <div className="profile-actions">
             {bookable.length > 0 && (
@@ -188,7 +218,7 @@ export default function ProfilePage() {
             {work.map(({ url, listing }, i) => (
               <li key={`${listing.id}-${i}`}>
                 <Link to={`/listings/${listing.id}`}>
-                  <img src={mediaUrl(url)} alt={`${listing.title}, photo`} />
+                  <Photo src={mediaUrl(url)} alt={`${listing.title}, photo`} />
                 </Link>
               </li>
             ))}
@@ -212,7 +242,7 @@ export default function ProfilePage() {
                 <li key={listing.id}>
                   <Link className="service-row" to={`/listings/${listing.id}`}>
                     {img ? (
-                      <img className="service-img" src={img} alt="" />
+                      <Photo className="service-img" src={img} />
                     ) : (
                       <span className="service-img">No photo</span>
                     )}
