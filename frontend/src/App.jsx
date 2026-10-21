@@ -12,7 +12,7 @@ import { MessageIcon } from "./components/icons";
 import TabBar from "./components/TabBar";
 import { useAuth } from "./context/AuthContext";
 import { useCampus } from "./lib/campus";
-import BrowsePage from "./pages/BrowsePage";
+import HomePage from "./pages/HomePage";
 import SearchPage from "./pages/SearchPage";
 import ListingDetailPage from "./pages/ListingDetailPage";
 import LoginPage from "./pages/LoginPage";
@@ -132,7 +132,7 @@ export default function App() {
           <p className="muted">Loading…</p>
         ) : (
           <Routes>
-            <Route path="/" element={<BrowsePage />} />
+            <Route path="/" element={<HomePage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route
               path="/listings/new"

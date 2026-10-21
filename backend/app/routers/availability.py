@@ -1,10 +1,11 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.core.campus import get_active_campus
 from app.core.deps import get_current_user, get_current_user_optional
 from app.db.session import get_db
 from app.models.availability import AvailabilitySlot
@@ -15,6 +16,7 @@ from app.schemas.availability import ProviderSlotRead, SlotCreate, SlotRead
 router = APIRouter(prefix="/availability", tags=["availability"])
 
 OVERLAP_MESSAGE = "That overlaps a slot you already have open."
+OPEN_SLOTS_MAX_DAYS = 7
 
 
 def _held_slot_ids(provider_id: int | None = None):
@@ -81,6 +83,51 @@ def list_open_slots(
             AvailabilitySlot.provider_id == provider_id,
             AvailabilitySlot.starts_at > func.now(),
             AvailabilitySlot.id.not_in(_held_slot_ids(provider_id)),
+        )
+        .order_by(AvailabilitySlot.starts_at)
+    )
+    return db.scalars(stmt).all()
+
+
+@router.get("/open", response_model=list[SlotRead])
+def campus_open_slots(
+    until: datetime = Query(
+        ..., description="Only slots starting before this, with a UTC offset."
+    ),
+    db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
+):
+    """Every open, upcoming slot on a campus that starts before `until`, for
+    the home screen's "open today" row. The caller sends the end of its own
+    day because only the browser knows the student's timezone. Scoped like
+    browse: your own campus, or the one Quad is open to for a guest."""
+    if until.tzinfo is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Send a time with a UTC offset, for example 2026-09-12T23:59:59Z.",
+        )
+    # A week is far more than the home screen asks for; the cap keeps one
+    # request from pulling every slot the campus has ever opened.
+    # UTC before comparing: SQLite stores the columns as naive UTC text and
+    # drops any offset on the bound value, so a -05:00 `until` would land
+    # five hours early there.
+    until = min(
+        until.astimezone(timezone.utc),
+        datetime.now(timezone.utc) + timedelta(days=OPEN_SLOTS_MAX_DAYS),
+    )
+    campus_id = (
+        current_user.university_id if current_user else get_active_campus(db).id
+    )
+
+    stmt = (
+        select(AvailabilitySlot)
+        .join(User, User.id == AvailabilitySlot.provider_id)
+        .where(
+            User.university_id == campus_id,
+            User.is_active.is_(True),
+            AvailabilitySlot.starts_at > func.now(),
+            AvailabilitySlot.starts_at < until,
+            AvailabilitySlot.id.not_in(_held_slot_ids()),
         )
         .order_by(AvailabilitySlot.starts_at)
     )

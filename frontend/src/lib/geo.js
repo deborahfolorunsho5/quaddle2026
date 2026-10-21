@@ -48,6 +48,13 @@ export function formatWalk(miles) {
   return minutes >= 60 ? "over an hour's walk" : `about ${minutes} min walk`;
 }
 
+/** Short form for a photo tile, "~7 min walk": the tilde keeps the hedge. */
+export function formatWalkShort(miles) {
+  const minutes = walkingMinutes(miles);
+  if (minutes == null) return null;
+  return minutes >= 60 ? "1 hr+ walk" : `~${minutes} min walk`;
+}
+
 /** Long form for a listing page: "0.4 mi away, about 9 min walk". */
 export function formatDistanceAndWalk(miles) {
   if (miles == null) return null;
