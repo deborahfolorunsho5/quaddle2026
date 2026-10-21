@@ -29,7 +29,7 @@ def upgrade() -> None:
         sa.Column(
             'created_at',
             sa.DateTime(timezone=True),
-            server_default=sa.text('now()'),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         # The lower id always goes first, so one pair cannot get two threads.
@@ -56,7 +56,7 @@ def upgrade() -> None:
         sa.Column(
             'created_at',
             sa.DateTime(timezone=True),
-            server_default=sa.text('now()'),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.ForeignKeyConstraint(['conversation_id'], ['conversations.id'], ),

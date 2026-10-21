@@ -11,7 +11,10 @@
   --q-blush: #fce9f0;
   --q-rose-light: #f5c3d5;
   --q-rose: #e27ba0;
-  --q-rose-deep: #c55c82;
+  /* Every rose that carries white text or reads as text itself. #c55c82 was
+     4.02:1 against white; this clears 4.5:1 on white, cream, sand and blush. */
+  --q-rose-deep: #b3406a;
+  --q-rose-dark: #99375a;
   --q-plum: #6b3e52;
 
   --q-gold: #c9993f;
@@ -30,7 +33,9 @@
   --q-tabbar-clearance: calc(
     var(--q-tabbar-height) + env(safe-area-inset-bottom) + 2rem
   );
-  --q-ring: 0 0 0 3px rgba(226, 123, 160, 0.35);
+  /* Solid, with a white gap so it shows on any fill. The old translucent halo
+     was well under the 3:1 a focus indicator needs. */
+  --q-ring: 0 0 0 2px var(--q-white), 0 0 0 4px var(--q-rose-deep);
 
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif;
@@ -256,11 +261,11 @@ a:hover {
 }
 /* The one rose fill in a view: the action the page exists for. */
 .btn-primary {
-  background: var(--q-rose);
+  background: var(--q-rose-deep);
   color: var(--q-white);
 }
 .btn-primary:hover {
-  background: var(--q-rose-deep);
+  background: var(--q-rose-dark);
   text-decoration: none;
 }
 /* Secondary actions: a hairline and a plum label, never a fill. */
@@ -392,7 +397,7 @@ textarea {
 .check input {
   width: auto;
   margin: 0;
-  accent-color: var(--q-rose);
+  accent-color: var(--q-rose-deep);
 }
 /* The palette carries no error color, so the deepest rose does the work. */
 .error {
@@ -451,8 +456,8 @@ textarea {
   box-shadow: var(--q-ring);
 }
 .chip.on {
-  background: var(--q-rose);
-  border-color: var(--q-rose);
+  background: var(--q-rose-deep);
+  border-color: var(--q-rose-deep);
   color: var(--q-white);
 }
 .viewbar {
@@ -1152,8 +1157,8 @@ textarea {
   box-shadow: var(--q-ring);
 }
 .slot-time.on {
-  background: var(--q-rose);
-  border-color: var(--q-rose);
+  background: var(--q-rose-deep);
+  border-color: var(--q-rose-deep);
   color: var(--q-white);
 }
 .slot-time:disabled {
@@ -1249,7 +1254,7 @@ textarea {
   min-width: 1.25rem;
   margin-left: 0.4rem;
   border-radius: var(--q-radius-pill);
-  background: var(--q-rose);
+  background: var(--q-rose-deep);
   color: var(--q-white);
   font-size: 0.7rem;
   font-weight: 800;
@@ -1331,7 +1336,7 @@ textarea {
   background: var(--q-sand);
 }
 .bubble-mine .bubble {
-  background: var(--q-rose);
+  background: var(--q-rose-deep);
   color: var(--q-white);
 }
 .bubble-body {
@@ -1885,7 +1890,7 @@ textarea {
 }
 .explore-tile:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 3px var(--q-rose);
+  box-shadow: inset 0 0 0 3px var(--q-rose-deep);
 }
 /* No photo: the title is the tile, so it is never a blank square. */
 .explore-tile-title {

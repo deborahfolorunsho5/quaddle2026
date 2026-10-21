@@ -36,7 +36,7 @@ Two apps plus a database.
 
 - **Backend** (`backend/`): FastAPI. Routers per resource, Pydantic schemas for request and response bodies, SQLAlchemy 2.0 models, Alembic migrations. Runs on `http://localhost:8000`, interactive docs at `/docs`.
 - **Frontend** (`frontend/`): React 19 with Vite, React Router. One file per screen under `src/pages/`, shared UI in `src/components/`, auth state in `src/context/AuthContext.jsx`, and a single API client in `src/api/client.js`. Runs on `http://localhost:5173`.
-- **Database**: PostgreSQL 16 in Docker for a Postgres-like local environment (`docker compose up -d`, host port `5433`). Note the mismatch to be aware of: the backend's **default** `DATABASE_URL` is SQLite (`sqlite:///./quaddle.db`), and `backend/app/db/session.py` special-cases SQLite. Confirm which database you are actually pointed at (check `backend/.env`) before reasoning about migrations or SQL behavior.
+- **Database**: PostgreSQL 16 in Docker for a Postgres-like local environment (`docker compose up -d`, host port `5433`). Note the mismatch to be aware of: the backend's **default** `DATABASE_URL` is SQLite (`sqlite:///./quaddle.db`), and `backend/app/db/session.py` special-cases SQLite. Confirm which database you are actually pointed at (check `backend/.env`) before reasoning about migrations or SQL behavior. Migrations must run on both: alter existing tables inside `op.batch_alter_table(...)`, and write timestamp defaults as `sa.func.now()`, never `sa.text('now()')`, which SQLite cannot call.
 
 ### Request path
 
@@ -93,10 +93,12 @@ The current endpoints are listed in the **API overview** table in `README.md`. T
 
 ## Testing
 
-There is **no automated test suite in the repo yet**. Be honest about this: do not claim tests pass, and do not imply a feature is verified when it is not.
+The backend has a `pytest` suite in `backend/tests/`, run from `backend/` with `pip install -r requirements-dev.txt` then `pytest`. Each test gets a fresh in-memory SQLite database built from the models, and `conftest.py` points `DATABASE_URL` at SQLite before the app is imported, so a test run never touches the database in `.env`. The frontend has no automated tests. Be honest about coverage: do not claim tests pass without running them, and do not imply a feature is verified when only part of it is tested.
 
-- When you implement or change backend behavior, verify it against the running API (`uvicorn app.main:app --reload`, then exercise it through `/docs` or a request) and say exactly what you checked.
-- If you add tests, use `pytest` for the backend and keep them runnable from `backend/`. Cover the parts most likely to break silently: booking status-transition rules (who may move a booking to which state), review constraints (rating range, one-per-pair), campus scoping (a user should never see or act on another campus's data), and auth boundaries (guest vs authenticated).
+- Covered so far: the campus-wide open slots endpoint, booking creation, every booking status transition (who may move a booking to which state, and when a slot is released), review constraints (rating range, one-per-pair, who may delete), campus scoping on browse, bookings, reviews, calendars and messages, listing ownership, and which routes turn guests away. Not yet covered: uploads, message sending and read state, and availability slot creation (overlaps, length cap). Add tests there before relying on those rules.
+- Write the expected rule into the test rather than importing it from the code under test, so a bug in the rule cannot make its own test pass.
+- When you implement or change backend behavior, add or update a test, and also verify it against the running API (`uvicorn app.main:app --reload`, then exercise it through `/docs` or a request). Say exactly what you checked.
+- The suite runs on SQLite, not PostgreSQL. Behavior that differs between the two (timezone handling, constraint changes) still needs a check against Postgres.
 - If you cannot run something in the current environment, **say so plainly** instead of implying success.
 
 ## Review your own output (required)

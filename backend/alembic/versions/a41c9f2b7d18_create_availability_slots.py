@@ -29,7 +29,7 @@ def upgrade() -> None:
         sa.Column(
             'created_at',
             sa.DateTime(timezone=True),
-            server_default=sa.text('now()'),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.CheckConstraint('ends_at > starts_at', name='ck_availability_slots_order'),
@@ -52,24 +52,28 @@ def upgrade() -> None:
         unique=False,
     )
 
-    op.add_column('bookings', sa.Column('slot_id', sa.Integer(), nullable=True))
-    op.add_column(
-        'bookings', sa.Column('requested_end', sa.DateTime(timezone=True), nullable=True)
-    )
-    op.create_foreign_key(
-        'fk_bookings_slot_id', 'bookings', 'availability_slots', ['slot_id'], ['id']
-    )
-    # At most one live booking per slot. Both PostgreSQL and SQLite allow
-    # repeated nulls here, which is what lets a declined booking free its time.
-    op.create_unique_constraint('uq_bookings_slot', 'bookings', ['slot_id'])
+    # Batch mode because SQLite cannot add a constraint to an existing table:
+    # there it rebuilds the table, and PostgreSQL gets the same plain ALTERs.
+    with op.batch_alter_table('bookings') as batch:
+        batch.add_column(sa.Column('slot_id', sa.Integer(), nullable=True))
+        batch.add_column(
+            sa.Column('requested_end', sa.DateTime(timezone=True), nullable=True)
+        )
+        batch.create_foreign_key(
+            'fk_bookings_slot_id', 'availability_slots', ['slot_id'], ['id']
+        )
+        # At most one live booking per slot. Both PostgreSQL and SQLite allow
+        # repeated nulls here, which is what lets a declined booking free its time.
+        batch.create_unique_constraint('uq_bookings_slot', ['slot_id'])
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_constraint('uq_bookings_slot', 'bookings', type_='unique')
-    op.drop_constraint('fk_bookings_slot_id', 'bookings', type_='foreignkey')
-    op.drop_column('bookings', 'requested_end')
-    op.drop_column('bookings', 'slot_id')
+    with op.batch_alter_table('bookings') as batch:
+        batch.drop_constraint('uq_bookings_slot', type_='unique')
+        batch.drop_constraint('fk_bookings_slot_id', type_='foreignkey')
+        batch.drop_column('requested_end')
+        batch.drop_column('slot_id')
 
     op.drop_index(
         op.f('ix_availability_slots_starts_at'), table_name='availability_slots'
