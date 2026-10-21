@@ -83,6 +83,10 @@ export const api = {
   // places at once, so taking a time closes it on all of their listings.
   getAvailability: (providerId) => request(`/availability?provider_id=${providerId}`),
   getMyAvailability: () => request("/availability/mine"),
+  // Open slots across the whole campus that start before `until` (an ISO
+  // string with an offset). The home screen passes the end of the local day.
+  getCampusOpenSlots: (until) =>
+    request(`/availability/open?until=${encodeURIComponent(until)}`),
   createSlot: (data) => request("/availability", { method: "POST", body: data }),
   deleteSlot: (id) => request(`/availability/${id}`, { method: "DELETE" }),
 

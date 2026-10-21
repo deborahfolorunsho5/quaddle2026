@@ -3,11 +3,11 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import BookingForm from "../components/BookingForm";
 import { Stars } from "../components/Stars";
 import ListingsMap from "../components/ListingsMap";
 import PhotoGallery from "../components/PhotoGallery";
-import SlotPicker from "../components/SlotPicker";
-import { formatDay, formatWhen } from "../lib/datetime";
+import { formatDay } from "../lib/datetime";
 import { distanceMiles, formatDistanceAndWalk, pinOf } from "../lib/geo";
 import { useMyLocation } from "../lib/useMyLocation";
 
@@ -25,13 +25,6 @@ export default function ListingDetailPage() {
   const [reviews, setReviews] = useState([]);
   const [error, setError] = useState("");
 
-  const [slots, setSlots] = useState(null);
-  const [slotId, setSlotId] = useState(null);
-  const [note, setNote] = useState("");
-  const [booked, setBooked] = useState(null);
-  const [bookingError, setBookingError] = useState("");
-  const [busy, setBusy] = useState(false);
-
   useEffect(() => {
     api
       .getListing(id)
@@ -48,14 +41,6 @@ export default function ListingDetailPage() {
   useEffect(() => {
     if (!ownerId) return;
     let cancelled = false;
-    api
-      .getAvailability(ownerId)
-      .then((open) => !cancelled && setSlots(open))
-      .catch((err) => {
-        if (cancelled) return;
-        setSlots([]);
-        setBookingError(err.message);
-      });
     // Reviews are context, not the point of the page, so a failure here leaves
     // the listing usable rather than replacing it with an error.
     api
@@ -81,57 +66,11 @@ export default function ListingDetailPage() {
     }
   };
 
-  const refreshSlots = async () => {
-    try {
-      setSlots(await api.getAvailability(ownerId));
-    } catch {
-      // Keep whatever the picker already has rather than emptying it.
-    }
-  };
-
-  const requestBooking = async (e) => {
-    e.preventDefault();
-    if (!slotId) {
-      setBookingError("Pick a time first.");
-      return;
-    }
-
-    setBusy(true);
-    setBookingError("");
-    try {
-      const created = await api.createBooking({
-        listing_id: listing.id,
-        slot_id: slotId,
-        message: note.trim() || null,
-      });
-      setBooked(created);
-      setSlotId(null);
-      setNote("");
-    } catch (err) {
-      // Most likely someone took the slot first, so reload before they retry.
-      setBookingError(err.message);
-    } finally {
-      await refreshSlots();
-      setBusy(false);
-    }
-  };
-
-  const messageOwner = async () => {
-    setBookingError("");
-    try {
-      const conversation = await api.startConversation(ownerId);
-      navigate(`/messages/${conversation.id}`);
-    } catch (err) {
-      setBookingError(err.message);
-    }
-  };
-
   if (error) return <div className="error">{error}</div>;
   if (!listing) return <p className="muted">Loading…</p>;
 
   const isOwner = user && user.id === listing.owner.id;
   const pin = pinOf(listing);
-  const hasOpenings = slots !== null && slots.length > 0;
 
   return (
     <>
@@ -231,92 +170,19 @@ export default function ListingDetailPage() {
         <section className="listing-booking">
           <h2>Book a time</h2>
 
-          {bookingError && <div className="error">{bookingError}</div>}
-
           {isOwner ? (
             <p className="muted">
               This is your listing.{" "}
               <Link to="/availability">Open the times you are free</Link> and
               students can book them here.
             </p>
-          ) : booked ? (
-            <div className="booking-done">
-              <p>
-                Requested for{" "}
-                <strong>
-                  {formatWhen(booked.requested_time, booked.requested_end)}
-                </strong>
-                . @{listing.owner.username} has to accept it.
-              </p>
-              <div className="booking-actions">
-                <Link className="btn btn-ghost" to="/bookings">
-                  See your bookings
-                </Link>
-                <button className="btn-link" type="button" onClick={messageOwner}>
-                  Message @{listing.owner.username}
-                </button>
-              </div>
-            </div>
-          ) : slots === null ? (
-            <p className="muted">Loading times…</p>
-          ) : !hasOpenings ? (
-            <>
-              <p className="empty">
-                @{listing.owner.username} has not opened any times yet.
-              </p>
-              {user && (
-                <button className="btn btn-ghost" type="button" onClick={messageOwner}>
-                  Message @{listing.owner.username}
-                </button>
-              )}
-            </>
           ) : (
-            <form onSubmit={requestBooking}>
-              <SlotPicker
-                slots={slots}
-                value={slotId}
-                onChange={setSlotId}
-                disabled={!user || busy}
-              />
-
-              {user ? (
-                <>
-                  <div className="field booking-note-field">
-                    <label htmlFor="booking-note">
-                      Anything they should know (optional)
-                    </label>
-                    <textarea
-                      id="booking-note"
-                      rows={3}
-                      maxLength={1000}
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                    />
-                  </div>
-                  <div className="booking-actions">
-                    <button
-                      className="btn btn-primary"
-                      type="submit"
-                      disabled={busy || !slotId}
-                    >
-                      {busy ? "Requesting…" : "Request this time"}
-                    </button>
-                    <button
-                      className="btn-link"
-                      type="button"
-                      onClick={messageOwner}
-                    >
-                      Message @{listing.owner.username}
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <p className="hint">
-                  <Link to="/login">Log in</Link> to book one of these times or
-                  message @{listing.owner.username}.
-                </p>
-              )}
-            </form>
+            <BookingForm
+              key={listing.id}
+              providerId={listing.owner.id}
+              providerName={listing.owner.username}
+              listings={[listing]}
+            />
           )}
         </section>
 

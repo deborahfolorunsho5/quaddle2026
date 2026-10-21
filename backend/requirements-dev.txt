@@ -1,0 +1,6 @@
+# Everything the app needs, plus the test tools. Kept apart from
+# requirements.txt so the production install stays lean.
+-r requirements.txt
+
+pytest>=8.0
+httpx>=0.27              # FastAPI's TestClient is built on it

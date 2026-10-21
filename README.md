@@ -82,6 +82,22 @@ uvicorn app.main:app --reload     # runs on http://localhost:8000
 
 The interactive API docs are at http://localhost:8000/docs.
 
+To run the backend tests (from `backend/`, with the venv active):
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+The tests build a fresh in-memory SQLite database for each test, so they never touch the database in your `.env`.
+
+To run the same tests against PostgreSQL, create a database whose name ends in `_test` and point `TEST_DATABASE_URL` at it. The tests drop every table between runs, so any other name is refused.
+
+```bash
+docker compose exec db psql -U quaddle -c "create database quaddle_test"
+TEST_DATABASE_URL=postgresql+psycopg2://quaddle:<password>@localhost:5433/quaddle_test pytest
+```
+
 ### 3. Frontend
 
 ```bash
@@ -108,6 +124,7 @@ npm run dev                       # runs on http://localhost:5173
 | POST | /api/uploads/image | Upload a photo (resized, re-saved as WEBP, location data stripped) |
 | GET | /api/availability?provider_id={id} | A provider's open, upcoming times |
 | GET | /api/availability/mine | My own times, including the booked ones |
+| GET | /api/availability/open?until={iso time} | Every open time on the campus starting before `until` (at most a week out), for the home screen |
 | POST | /api/availability | Open a time on my calendar |
 | DELETE | /api/availability/{id} | Take an unbooked time off my calendar |
 | POST | /api/bookings | Request a booking against an open time |

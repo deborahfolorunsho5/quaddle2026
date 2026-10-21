@@ -11,13 +11,19 @@
   --q-blush: #fce9f0;
   --q-rose-light: #f5c3d5;
   --q-rose: #e27ba0;
-  --q-rose-deep: #c55c82;
+  /* Every rose that carries white text or reads as text itself. #c55c82 was
+     4.02:1 against white; this clears 4.5:1 on white, cream, sand and blush. */
+  --q-rose-deep: #b3406a;
+  --q-rose-dark: #99375a;
   --q-plum: #6b3e52;
 
   --q-gold: #c9993f;
   /* Open availability and accepted bookings: the one green in the palette. */
   --q-sage: #7e9e86;
   --q-taupe: #a88b7d;
+  /* Darker sage and gold for text: the light ones are under 3:1 on white. */
+  --q-sage-ink: #4d6b55;
+  --q-gold-ink: #8a6721;
 
   --q-radius: 12px;
   --q-radius-pill: 999px;
@@ -27,7 +33,9 @@
   --q-tabbar-clearance: calc(
     var(--q-tabbar-height) + env(safe-area-inset-bottom) + 2rem
   );
-  --q-ring: 0 0 0 3px rgba(226, 123, 160, 0.35);
+  /* Solid, with a white gap so it shows on any fill. The old translucent halo
+     was well under the 3:1 a focus indicator needs. */
+  --q-ring: 0 0 0 2px var(--q-white), 0 0 0 4px var(--q-rose-deep);
 
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif;
@@ -253,11 +261,11 @@ a:hover {
 }
 /* The one rose fill in a view: the action the page exists for. */
 .btn-primary {
-  background: var(--q-rose);
+  background: var(--q-rose-deep);
   color: var(--q-white);
 }
 .btn-primary:hover {
-  background: var(--q-rose-deep);
+  background: var(--q-rose-dark);
   text-decoration: none;
 }
 /* Secondary actions: a hairline and a plum label, never a fill. */
@@ -304,7 +312,9 @@ a:hover {
 .field {
   margin-bottom: 1.15rem;
 }
-.field > label {
+/* .field-label is for a group of controls, which has no single input to label. */
+.field > label,
+.field-label {
   display: block;
   font-size: 0.72rem;
   font-weight: 800;
@@ -387,7 +397,7 @@ textarea {
 .check input {
   width: auto;
   margin: 0;
-  accent-color: var(--q-rose);
+  accent-color: var(--q-rose-deep);
 }
 /* The palette carries no error color, so the deepest rose does the work. */
 .error {
@@ -446,8 +456,8 @@ textarea {
   box-shadow: var(--q-ring);
 }
 .chip.on {
-  background: var(--q-rose);
-  border-color: var(--q-rose);
+  background: var(--q-rose-deep);
+  border-color: var(--q-rose-deep);
   color: var(--q-white);
 }
 .viewbar {
@@ -1090,11 +1100,11 @@ textarea {
 .status-open,
 .status-accepted {
   background: rgba(126, 158, 134, 0.16);
-  color: #4d6b55;
+  color: var(--q-sage-ink);
 }
 .status-pending {
   background: rgba(201, 153, 63, 0.16);
-  color: #8a6721;
+  color: var(--q-gold-ink);
 }
 .status-completed {
   background: var(--q-blush);
@@ -1147,8 +1157,8 @@ textarea {
   box-shadow: var(--q-ring);
 }
 .slot-time.on {
-  background: var(--q-rose);
-  border-color: var(--q-rose);
+  background: var(--q-rose-deep);
+  border-color: var(--q-rose-deep);
   color: var(--q-white);
 }
 .slot-time:disabled {
@@ -1244,7 +1254,7 @@ textarea {
   min-width: 1.25rem;
   margin-left: 0.4rem;
   border-radius: var(--q-radius-pill);
-  background: var(--q-rose);
+  background: var(--q-rose-deep);
   color: var(--q-white);
   font-size: 0.7rem;
   font-weight: 800;
@@ -1326,7 +1336,7 @@ textarea {
   background: var(--q-sand);
 }
 .bubble-mine .bubble {
-  background: var(--q-rose);
+  background: var(--q-rose-deep);
   color: var(--q-white);
 }
 .bubble-body {
@@ -1356,3 +1366,582 @@ textarea {
 .composer .btn {
   flex-shrink: 0;
 }
+
+/* ---- home ---- */
+.home-section {
+  margin-bottom: 2.2rem;
+}
+.home-head {
+  font-size: 1.02rem;
+  margin-bottom: 0.8rem;
+}
+
+/* The one booking coming up, as a single row. */
+.next-booking {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  max-width: 560px;
+  background: var(--q-white);
+  border: 1px solid var(--q-border);
+  border-radius: var(--q-radius);
+  padding: 0.65rem 0.9rem 0.65rem 0.65rem;
+  color: var(--q-ink);
+}
+.next-booking:hover {
+  border-color: var(--q-rose-light);
+  text-decoration: none;
+}
+.next-booking-img {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--q-sand);
+}
+.next-booking-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.3;
+}
+.next-booking-title {
+  font-weight: 700;
+}
+.next-booking-when {
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+.next-booking-who {
+  font-size: 0.84rem;
+  color: var(--q-muted);
+}
+.next-booking .status-pill {
+  align-self: flex-start;
+}
+
+/* Swiped sideways on a phone; scroll snapping keeps a card's edge aligned. */
+.open-row {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0.4rem;
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.open-row::-webkit-scrollbar {
+  display: none;
+}
+/* Narrow enough that a third card peeks in on a phone, which is what says
+   the row scrolls. */
+.open-row > li {
+  flex: 0 0 150px;
+  scroll-snap-align: start;
+}
+@media (min-width: 641px) {
+  .open-row > li {
+    flex-basis: 190px;
+  }
+}
+.open-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  color: var(--q-ink);
+}
+.open-card:hover {
+  text-decoration: none;
+}
+.open-card:hover .open-card-img {
+  border-color: var(--q-rose-light);
+}
+/* Taller than a browse card's 4:3: in a row you see the photo before the words. */
+.open-card-img,
+.fresh-card-img {
+  position: relative;
+  border: 1px solid var(--q-border);
+  border-radius: var(--q-radius);
+  overflow: hidden;
+  background: var(--q-sand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--q-taupe);
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+  transition: border-color 0.14s ease;
+}
+.open-card-img {
+  aspect-ratio: 4 / 5;
+}
+.open-card-img img,
+.fresh-card-img img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.open-card-walk,
+.fresh-card-price {
+  position: absolute;
+  left: 0.5rem;
+  padding: 0.12rem 0.55rem;
+  border-radius: var(--q-radius-pill);
+  background: var(--q-white);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.open-card-walk {
+  top: 0.5rem;
+  color: var(--q-rose-deep);
+}
+.open-card-title,
+.fresh-card-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.open-card-meta,
+.fresh-card-meta {
+  font-size: 0.8rem;
+  color: var(--q-muted);
+  line-height: 1.3;
+}
+.open-card-price {
+  color: var(--q-plum);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.open-card-times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+}
+.time-chip {
+  padding: 0.12rem 0.55rem;
+  border-radius: var(--q-radius-pill);
+  background: rgba(126, 158, 134, 0.16);
+  color: var(--q-sage-ink);
+  font-size: 0.76rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.category-tiles,
+.fresh-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+.category-tiles {
+  gap: 0.65rem;
+}
+/* The photo is a disc tucked into the corner, so the name always sits on
+   plain sand and reads whatever the picture is. */
+.category-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 92px;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--q-border);
+  border-radius: var(--q-radius);
+  background: var(--q-sand);
+  overflow: hidden;
+  color: var(--q-ink);
+  line-height: 1.25;
+}
+.category-tile:hover {
+  border-color: var(--q-rose-light);
+  text-decoration: none;
+}
+.category-tile img {
+  position: absolute;
+  right: -14px;
+  top: -8px;
+  width: 96px;
+  height: 96px;
+  border-radius: var(--q-radius-pill);
+  object-fit: cover;
+}
+.category-tile-name {
+  position: relative;
+  font-weight: 750;
+}
+.category-tile-count {
+  position: relative;
+  font-size: 0.78rem;
+  color: var(--q-muted);
+}
+
+.fresh-grid {
+  gap: 1.1rem 0.75rem;
+}
+.fresh-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: var(--q-ink);
+}
+.fresh-card:hover {
+  text-decoration: none;
+}
+.fresh-card:hover .fresh-card-img {
+  border-color: var(--q-rose-light);
+}
+.fresh-card-img {
+  aspect-ratio: 1;
+}
+.fresh-card-price {
+  bottom: 0.5rem;
+  color: var(--q-plum);
+  font-variant-numeric: tabular-nums;
+}
+.fresh-card-rating {
+  color: var(--q-gold-ink);
+  font-weight: 700;
+}
+.fresh-card-new {
+  color: var(--q-sage-ink);
+  font-weight: 700;
+}
+
+/* ---- profile ---- */
+.profile-top {
+  margin-bottom: 2rem;
+}
+.profile-top .profile-head {
+  margin-bottom: 0.9rem;
+}
+/* The name sits tight under the handle instead of a paragraph's default gap. */
+.profile-id p {
+  margin: 0.15rem 0 0;
+}
+.profile-about {
+  margin: 0 0 1rem;
+  color: var(--q-muted);
+  font-size: 0.92rem;
+}
+.profile-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 0.6rem;
+  max-width: 440px;
+}
+.profile-section {
+  margin-bottom: 2.2rem;
+  /* Book a time links here; this keeps the heading clear of the sticky nav. */
+  scroll-margin-top: 5rem;
+}
+
+.work-strip {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0.4rem;
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.work-strip::-webkit-scrollbar {
+  display: none;
+}
+.work-strip > li {
+  flex: 0 0 132px;
+  scroll-snap-align: start;
+}
+.work-strip img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border: 1px solid var(--q-border);
+  border-radius: var(--q-radius);
+  background: var(--q-sand);
+}
+
+/* A provider's listings read as a menu of services, so a list, not a grid. */
+.service-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--q-white);
+  border: 1px solid var(--q-border);
+  border-radius: var(--q-radius);
+  overflow: hidden;
+}
+.service-list li + li {
+  border-top: 1px solid var(--q-border);
+}
+.service-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.65rem 0.9rem 0.65rem 0.65rem;
+  color: var(--q-ink);
+}
+.service-row:hover {
+  background: var(--q-sand);
+  text-decoration: none;
+}
+.service-img {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--q-sand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--q-taupe);
+  font-size: 0.66rem;
+  font-weight: 600;
+}
+.service-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.3;
+}
+.service-body .card-hidden {
+  margin: 0;
+}
+.service-title {
+  font-weight: 700;
+}
+.service-desc {
+  color: var(--q-muted);
+  font-size: 0.86rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.review-summary {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  max-width: 560px;
+  background: var(--q-white);
+  border: 1px solid var(--q-border);
+  border-radius: var(--q-radius);
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1rem;
+}
+.review-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+.review-average {
+  font-size: 2.1rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--q-plum);
+  font-variant-numeric: tabular-nums;
+}
+.review-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+.review-bars li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.76rem;
+  color: var(--q-muted);
+  font-variant-numeric: tabular-nums;
+}
+.review-bars li > span:first-child,
+.review-bars li > span:last-child {
+  width: 1rem;
+  text-align: center;
+}
+.review-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--q-radius-pill);
+  background: var(--q-sand);
+  overflow: hidden;
+}
+.review-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--q-gold);
+  border-radius: var(--q-radius-pill);
+}
+.review-form {
+  margin-top: 1.25rem;
+}
+
+/* ---- search ---- */
+.explore-search {
+  position: relative;
+  margin-bottom: 0.9rem;
+}
+.explore-search svg {
+  position: absolute;
+  left: 0.95rem;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  color: var(--q-muted);
+  pointer-events: none;
+}
+.explore-search input {
+  padding-left: 2.75rem;
+  border-radius: var(--q-radius-pill);
+  background: var(--q-sand);
+  border-color: var(--q-sand);
+}
+.explore-search input:focus {
+  background: var(--q-white);
+}
+/* One swipeable row on a phone, where a wrapped block of chips would push the
+   photos below the fold. */
+.explore-chips {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.9rem;
+}
+.explore-chips::-webkit-scrollbar {
+  display: none;
+}
+.explore-chips .chip {
+  white-space: nowrap;
+}
+.explore-count {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: var(--q-muted);
+  margin: 0 0 0.6rem;
+}
+.explore-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  gap: 2px;
+  border-radius: var(--q-radius);
+  overflow: hidden;
+}
+.explore-grid .featured {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+.explore-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  height: 100%;
+  background: var(--q-sand);
+  overflow: hidden;
+}
+.explore-tile:hover {
+  text-decoration: none;
+}
+.explore-tile img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.15s ease;
+}
+.explore-tile:hover img {
+  transform: scale(1.03);
+}
+.explore-tile:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 3px var(--q-rose-deep);
+}
+/* No photo: the title is the tile, so it is never a blank square. */
+.explore-tile-title {
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--q-plum);
+}
+.explore-tile-price,
+.explore-tile-walk {
+  position: absolute;
+  left: 0.4rem;
+  max-width: calc(100% - 0.8rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Walking time on top, price at the bottom, the same corners as on the home
+   screen's cards. */
+.explore-tile-walk {
+  top: 0.4rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--q-radius-pill);
+  background: var(--q-white);
+  color: var(--q-rose-deep);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+.explore-tile-price {
+  bottom: 0.4rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--q-radius-pill);
+  background: var(--q-white);
+  color: var(--q-plum);
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+@media (min-width: 860px) {
+  .explore-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+  }
+}
+/* Edge to edge on a phone, like a camera roll; the page gutter is 1rem here. */
+@media (max-width: 640px) {
+  .explore-grid {
+    margin-inline: -1rem;
+    border-radius: 0;
+  }
+}
+
